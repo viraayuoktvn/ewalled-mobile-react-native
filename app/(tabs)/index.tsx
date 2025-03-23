@@ -36,7 +36,7 @@ const Dashboard = () => {
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>Good Morning, Chelsea</Text>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Check all your incoming and outgoing transactions here</Text>
         </View>
-        <Image source={require("../../assets/images/sun-face.png")} className="w-12 h-12" />
+        <Image source={isDarkMode ? require("../../assets/images/moon-face.png") : require("../../assets/images/sun-face.png")} className="w-12 h-12" />
       </View>
 
       {/* Account Number */}
@@ -50,7 +50,7 @@ const Dashboard = () => {
         <View>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
           <View className="flex-row items-center">
-            <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>{isBalanceHidden ? "******" : "Rp 10.000.000"}</Text>
+            <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>{isBalanceHidden ? "***************" : "Rp 10.000.000"}</Text>
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
               <Image source={require("../../assets/images/view.png")} className="ml-3" />
             </TouchableOpacity>
@@ -70,10 +70,10 @@ const Dashboard = () => {
       <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}>
         <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold mb-4`}>Transaction History</Text>
         <View className="h-[1px] bg-gray-300 w-full mb-3" />
-        {[{ name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" },
-          { name: "Adityo Gizwanda", type: "Topup", amount: "+ 75.000,00", color: "text-green-500" },
-          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" },
-          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" }].map((item, i) => (
+        {[{ name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
+          { name: "Adityo Gizwanda", type: "Topup", amount: "+ 75.000,00" },
+          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
+          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" }].map((item, i) => (
           <View key={i} className="flex-row justify-between items-center border-b border-gray-300 py-3">
             <View className="flex-row items-center">
               <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
@@ -83,7 +83,7 @@ const Dashboard = () => {
                 <Text className="text-gray-500 text-xs">08 December 2024</Text>
               </View>
             </View>
-            <Text className={`${item.color} font-bold`}>{item.amount}</Text>
+            <Text className={`${item.amount.startsWith('-') ? (isDarkMode ? "text-white" : "text-black") : "text-green-500"} font-bold`}>{item.amount}</Text>
           </View>
         ))}
       </View>
