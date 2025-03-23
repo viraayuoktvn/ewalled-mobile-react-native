@@ -52,9 +52,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="login"
         options={{
-          title: 'Explore',
+          title: 'Login',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
+          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
+        }}
+      />
+      <Tabs.Screen
+        name="register"
+        options={{
+          title: 'Register',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
           tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
         }}
