@@ -1,74 +1,94 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, TouchableOpacity, Text, View, ScrollView } from "react-native";
+import { useState } from "react";
+import { useColorScheme } from "nativewind";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const Dashboard = () => {
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
 
-export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+    <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-4`}>
+      {/* Profile & Theme Toggle */}
+      <View className="mt-10 flex-row justify-between items-center">
+        <View className="flex-row items-center">
+          <Image source={require("../../assets/images/avatar.png")} className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2" />
+          <View>
+            <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
+              Chelsea Immanuela
+            </Text>
+            <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Personal Account</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setIsDarkMode(!isDarkMode);
+            setColorScheme(isDarkMode ? "light" : "dark");
+          }}
+        >
+          <Image source={require("../../assets/images/sun.png")} className="w-8 h-8" />
+        </TouchableOpacity>
+      </View>
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+      {/* Greeting Section */}
+      <View className="mt-6 flex-row justify-between items-center">
+        <View>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>Good Morning, Chelsea</Text>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Check all your incoming and outgoing transactions here</Text>
+        </View>
+        <Image source={require("../../assets/images/sun-face.png")} className="w-12 h-12" />
+      </View>
+
+      {/* Account Number */}
+      <View className="mt-4 bg-[#0061FF] p-4 rounded-[10px] flex-row justify-between items-center shadow-md shadow-[#19918F]">
+        <Text className="text-white">Account No.</Text>
+        <Text className="text-white font-bold text-lg">100899</Text>
+      </View>
+
+      {/* Balance Section */}
+      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
+        <View>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
+          <View className="flex-row items-center">
+            <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>{isBalanceHidden ? "******" : "Rp 10.000.000"}</Text>
+            <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
+              <Image source={require("../../assets/images/view.png")} className="ml-3" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View className="flex items-end">
+          <TouchableOpacity className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]">
+            <Image source={require("../../assets/images/plus.png")} className="w-8 h-8" />
+          </TouchableOpacity>
+          <TouchableOpacity className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]">
+            <Image source={require("../../assets/images/share.png")} className="w-8 h-8" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Transaction History */}
+      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}>
+        <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold mb-4`}>Transaction History</Text>
+        <View className="h-[1px] bg-gray-300 w-full mb-3" />
+        {[{ name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" },
+          { name: "Adityo Gizwanda", type: "Topup", amount: "+ 75.000,00", color: "text-green-500" },
+          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" },
+          { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00", color: "text-black" }].map((item, i) => (
+          <View key={i} className="flex-row justify-between items-center border-b border-gray-300 py-3">
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
+              <View>
+                <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>{item.name}</Text>
+                <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>{item.type}</Text>
+                <Text className="text-gray-500 text-xs">08 December 2024</Text>
+              </View>
+            </View>
+            <Text className={`${item.color} font-bold`}>{item.amount}</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+};
+
+export default Dashboard;
