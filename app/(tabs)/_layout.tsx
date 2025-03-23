@@ -52,25 +52,25 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="login"
-        options={{
-          title: 'Login',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
-          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
-        }}
-      />
-      <Tabs.Screen
-        name="register"
-        options={{
-          title: 'Register',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
-          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
-        }}
-      />
-      <Tabs.Screen
         name="topup"
         options={{
           title: 'Top Up',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
+          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
+        }}
+      />
+      <Tabs.Screen
+        name="transfer"
+        options={{
+          title: 'Transfer',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
+          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
+        }}
+      />
+      <Tabs.Screen
+        name="signout"
+        options={{
+          title: 'Sign Out',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
           tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
         }}
