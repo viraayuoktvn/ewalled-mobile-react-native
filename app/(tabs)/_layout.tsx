@@ -67,6 +67,14 @@ export default function TabLayout() {
           tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
         }}
       />
+      <Tabs.Screen
+        name="topup"
+        options={{
+          title: 'Top Up',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />, 
+          tabBarLabelStyle: { fontFamily: "OpenSans_Bold" }
+        }}
+      />
     </Tabs>
   );
 }
