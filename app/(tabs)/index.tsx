@@ -1,9 +1,11 @@
 import { Image, TouchableOpacity, Text, View, ScrollView } from "react-native";
 import { useState } from "react";
 import { useColorScheme } from "nativewind";
+import { useRouter } from "expo-router"; // ✅ Import useRouter
 
 const Dashboard: React.FC = () => {
   const { colorScheme, setColorScheme } = useColorScheme();
+  const router = useRouter(); // ✅ Inisialisasi router
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [isBalanceHidden, setIsBalanceHidden] = useState<boolean>(false);
 
@@ -48,7 +50,7 @@ const Dashboard: React.FC = () => {
 
       {/* Greeting Section */}
       <View className="mt-6 flex-row justify-between items-center">
-        <View>
+        <View className="flex-1">
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>
             Good Morning, Chelsea
           </Text>
@@ -62,7 +64,7 @@ const Dashboard: React.FC = () => {
               ? require("../../assets/images/moon-face.png")
               : require("../../assets/images/sun-face.png")
           }
-          className="w-12 h-12"
+          className="h-13 w-auto"
         />
       </View>
 
@@ -86,11 +88,20 @@ const Dashboard: React.FC = () => {
           </View>
         </View>
         <View className="flex items-end">
-          <TouchableOpacity className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]">
-            <Image source={require("../../assets/images/plus.png")} className="w-8 h-8" />
+          {/* Tombol Top Up */}
+          <TouchableOpacity
+            className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
+            onPress={() => router.push("/topup")} 
+          >
+            <Image source={require("../../assets/images/plus.png")} className="w-7 h-7" />
           </TouchableOpacity>
-          <TouchableOpacity className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]">
-            <Image source={require("../../assets/images/share.png")} className="w-8 h-8" />
+
+          {/*  Tombol Transfer */}
+          <TouchableOpacity
+            className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]"
+            onPress={() => router.push("/transfer")} 
+          >
+            <Image source={require("../../assets/images/share.png")} className="w-7 h-7" />
           </TouchableOpacity>
         </View>
       </View>
