@@ -7,80 +7,95 @@ import {
   Image,
   Modal,
   ScrollView,
+  Alert,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+
+const { width } = Dimensions.get("window");
+const isLargeScreen = width > 768;
+
+const API_BASE_URL = "http://192.168.1.8:8080/api/users";
 
 const RegisterScreen: React.FC = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [fullname, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!fullname || !username || !email || !password) {
+      Alert.alert("Error", "Please fill in all required fields");
+      return;
+    }
+
+    if (!isChecked) {
+      Alert.alert("Error", "You must agree to the terms and conditions.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fullname, username, email, password, phoneNumber: phoneNumber || null, avatarUrl: avatarUrl || null }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        router.replace("/login");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to connect to the server");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View className="flex-1 bg-white justify-center items-center p-6">
-      {/* Logo */}
-      <Image
-        source={require("../assets/images/ewalled.png")}
-        className="w-[233px] h-[57px] mb-12"
-      />
-
-      {/* Input Fields */}
-      <View className="w-full mb-6 mt-12">
-        <TextInput
-          placeholder="Fullname"
-          placeholderTextColor="black"
-          className="w-full p-4 rounded-[10px] bg-gray-100"
-          value={fullName}
-          onChangeText={setFullName}
-        />
+    <ScrollView className="flex-1 bg-white" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
+      <Image source={require("../assets/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
+      
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Fullname" className="w-full p-4 rounded-lg bg-gray-100" value={fullname} onChangeText={setFullName} />
       </View>
-      <View className="w-full mb-6">
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="black"
-          className="w-full p-4 rounded-[10px] bg-gray-100"
-          value={email}
-          onChangeText={setEmail}
-        />
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Username" className="w-full p-4 rounded-lg bg-gray-100" value={username} onChangeText={setUsername} />
       </View>
-      <View className="w-full mb-6">
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="black"
-          secureTextEntry
-          className="w-full p-4 rounded-[10px] bg-gray-100"
-          value={password}
-          onChangeText={setPassword}
-        />
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Email" className="w-full p-4 rounded-lg bg-gray-100" value={email} onChangeText={setEmail} keyboardType="email-address" />
       </View>
-      <View className="w-full mb-6">
-        <TextInput
-          placeholder="Avatar URL"
-          placeholderTextColor="black"
-          className="w-full p-4 rounded-[10px] bg-gray-100"
-          value={avatarUrl}
-          onChangeText={setAvatarUrl}
-        />
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Password" className="w-full p-4 rounded-lg bg-gray-100" secureTextEntry value={password} onChangeText={setPassword} />
+      </View>
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Phone Number (Optional)" className="w-full p-4 rounded-lg bg-gray-100" value={phoneNumber} onChangeText={setPhoneNumber} />
+      </View>
+      <View className="w-full max-w-md mb-6">
+        <TextInput placeholder="Avatar URL (Optional)" className="w-full p-4 rounded-lg bg-gray-100" value={avatarUrl} onChangeText={setAvatarUrl} />
       </View>
 
-      {/* Terms and Conditions Checkbox */}
       <View className="mt-6 flex-row justify-center items-center">
-        <TouchableOpacity
-          onPress={() => setIsChecked(!isChecked)}
-          className={`w-6 h-6 mr-2 border-2 rounded-md ${
-            isChecked ? "bg-[#0061FF] border-[#0061FF]" : "border-gray-400"
-          } flex justify-center items-center`}
-        >
+        <TouchableOpacity onPress={() => setIsChecked(!isChecked)} className={`w-6 h-6 mr-2 border-2 rounded-md ${isChecked ? "bg-blue-600 border-blue-600" : "border-gray-400"}`}> 
           {isChecked && <Text className="text-white font-bold">✓</Text>}
         </TouchableOpacity>
-        <Text className="text-black">I have read and agree to the </Text>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Text className="text-[#0061FF]">Terms and Conditions</Text>
-        </TouchableOpacity>
-        <Text className="text-[#FF0000]"> *</Text>
+        <Text className="text-black">I have agree to the </Text>
+        <View className="flex-row items-center">
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Text className="text-[#0061FF]">Terms and Conditions</Text>
+          </TouchableOpacity>
+          <Text className="text-[#FF0000] ml-1">*</Text>
+        </View>
       </View>
 
       {/* Modal for Terms and Conditions */}
@@ -153,25 +168,19 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
-      {/* Register Button */}
-      <TouchableOpacity
-        className={`w-full p-4 rounded-lg mt-4 ${
-          isChecked ? "bg-[#0061FF]" : "bg-gray-400"
-        }`}
-        disabled={!isChecked}
-        onPress={() => router.push("/login")}
-      >
-        <Text className="text-white text-center font-bold">Register</Text>
+      <TouchableOpacity className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>
 
       {/* Login Link */}
-      <Text className="mt-4 text-black self-start">
-        Have an account?{" "}
-        <Text className="text-[#0061FF]" onPress={() => router.push("/login")}>
-          Login here
-        </Text>
-      </Text>
-    </View>
+      <View className="mt-3 mb-3 flex-row items-start justify-start w-full max-w-md">
+        <Text className="text-black">Have an account? </Text>
+        <TouchableOpacity onPress={() => router.push("/login")}>
+          <Text className="text-[#0061FF]">Login here</Text>
+        </TouchableOpacity>
+      </View>
+
+    </ScrollView>
   );
 };
 

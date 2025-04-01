@@ -5,9 +5,8 @@ const SignOut: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect ke halaman login
     router.replace("/login");
-  }, [router]); // Menambahkan router sebagai dependency untuk best practice
+  }, [router]); 
 
   return null;
 };

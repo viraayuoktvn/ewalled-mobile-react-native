@@ -1,21 +1,15 @@
-import { Image, TouchableOpacity, Text, View, ScrollView } from "react-native";
-import { useState } from "react";
-import { useColorScheme } from "nativewind";
-import { useRouter } from "expo-router"; // ✅ Import useRouter
+import React, { useState } from "react";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useRouter } from "expo-router";
 
 const Dashboard: React.FC = () => {
-  const { colorScheme, setColorScheme } = useColorScheme();
-  const router = useRouter(); // ✅ Inisialisasi router
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const { isDarkMode, toggleTheme } = useTheme();
+  const router = useRouter();
+
   const [isBalanceHidden, setIsBalanceHidden] = useState<boolean>(false);
 
-  interface Transaction {
-    name: string;
-    type: string;
-    amount: string;
-  }
-
-  const transactions: Transaction[] = [
+  const transactions = [
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
     { name: "Adityo Gizwanda", type: "Topup", amount: "+ 75.000,00" },
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
@@ -35,16 +29,20 @@ const Dashboard: React.FC = () => {
             <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
               Chelsea Immanuela
             </Text>
-            <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Personal Account</Text>
+            <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+              Personal Account
+            </Text>
           </View>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            setIsDarkMode(!isDarkMode);
-            setColorScheme(isDarkMode ? "light" : "dark");
-          }}
-        >
-          <Image source={require("../../assets/images/sun.png")} className="w-8 h-8" />
+        <TouchableOpacity onPress={toggleTheme}>
+          <Image
+            source={
+              isDarkMode
+                ? require("../../assets/images/moon.png")
+                : require("../../assets/images/sun2.png")
+            }
+            style={{ width: 55, height: 55 }}
+          />
         </TouchableOpacity>
       </View>
 
@@ -75,7 +73,9 @@ const Dashboard: React.FC = () => {
       </View>
 
       {/* Balance Section */}
-      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
+      <View
+        className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}
+      >
         <View>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
           <View className="flex-row items-center">
@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
           {/* Tombol Top Up */}
           <TouchableOpacity
             className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
-            onPress={() => router.push("/topup")} 
+            onPress={() => router.push("/topup")}
           >
             <Image source={require("../../assets/images/plus.png")} className="w-7 h-7" />
           </TouchableOpacity>
@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
           {/*  Tombol Transfer */}
           <TouchableOpacity
             className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]"
-            onPress={() => router.push("/transfer")} 
+            onPress={() => router.push("/transfer")}
           >
             <Image source={require("../../assets/images/share.png")} className="w-7 h-7" />
           </TouchableOpacity>
@@ -107,7 +107,9 @@ const Dashboard: React.FC = () => {
       </View>
 
       {/* Transaction History */}
-      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}>
+      <View
+        className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}
+      >
         <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold mb-4`}>
           Transaction History
         </Text>
@@ -123,13 +125,19 @@ const Dashboard: React.FC = () => {
                 <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
                   {item.name}
                 </Text>
-                <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>{item.type}</Text>
+                <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+                  {item.type}
+                </Text>
                 <Text className="text-gray-500 text-xs">08 December 2024</Text>
               </View>
             </View>
             <Text
               className={`${
-                item.amount.startsWith("-") ? (isDarkMode ? "text-white" : "text-black") : "text-green-500"
+                item.amount.startsWith("-")
+                  ? isDarkMode
+                    ? "text-white"
+                    : "text-black"
+                  : "text-green-500"
               } font-bold`}
             >
               {item.amount}

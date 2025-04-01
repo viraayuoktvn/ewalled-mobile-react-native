@@ -7,20 +7,22 @@ const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: "#FFFFFF", // White text for dark mode
+    background: "#272727", // Dark background for dark mode
+    tint: "#0061FF", // Active tint color (icon/text) for dark mode
+    icon: "#0061FF", // Icon color for dark mode
+    tabIconDefault: "#888888", // Default icon color for inactive tabs (light gray)
+    tabIconSelected: "#0061FF", // Icon color for active tab
+    inactiveTint: "#888888", // Inactive tab color (gray) for dark mode
+  },
+  light: {
+    text: "#000000", // Black text for light mode
+    background: "#FFFFFF", // Light background for light mode
+    tint: "#0061FF", // Active tint color (icon/text) for light mode
+    icon: "#0061FF", // Icon color for light mode
+    tabIconDefault: "#888888", // Default icon color for inactive tabs (gray)
+    tabIconSelected: "#0061FF", // Icon color for active tab
+    inactiveTint: "#AAAAAA", // Inactive tab color (gray) for light mode
   },
 };
