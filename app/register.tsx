@@ -12,11 +12,12 @@ import {
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
 
-const API_BASE_URL = "http://192.168.1.8:8080/api/users";
+const API_BASE_URL = "http://192.168.1.8:8080/api/auth/register";
 
 const RegisterScreen: React.FC = () => {
   const router = useRouter();
@@ -31,16 +32,18 @@ const RegisterScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!fullname || !username || !email || !password) {
+    console.log("Sending data:", { fullname, username, email, password, phoneNumber, avatarUrl });
+
+    if (!fullname || !username || !email || !password || !phoneNumber) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
-
+  
     if (!isChecked) {
       Alert.alert("Error", "You must agree to the terms and conditions.");
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await fetch(API_BASE_URL, {
@@ -48,24 +51,35 @@ const RegisterScreen: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullname, username, email, password, phoneNumber: phoneNumber || null, avatarUrl: avatarUrl || null }),
+        body: JSON.stringify({ fullname, username, email, password, phoneNumber, avatarUrl: avatarUrl || null }),
+        credentials: "include",
       });
-
+  
       const data = await response.json();
+      console.log("API Response:", data); 
+  
       if (response.ok) {
+        // Save user data to AsyncStorage
+        await AsyncStorage.setItem("userData", JSON.stringify(data));
+  
+        const storedUserData = await AsyncStorage.getItem("userData");
+        console.log("Stored User Data:", storedUserData);
+  
         router.replace("/login");
+      } else {
+        Alert.alert("Registration Error", "Registration failed. Please try again.");
       }
     } catch (error) {
       Alert.alert("Error", "Failed to connect to the server");
     } finally {
       setLoading(false);
     }
-  };
+  };   
 
   return (
     <ScrollView className="flex-1 bg-white" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
       <Image source={require("../assets/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
-      
+
       <View className="w-full max-w-md mb-6">
         <TextInput placeholder="Fullname" className="w-full p-4 rounded-lg bg-gray-100" value={fullname} onChangeText={setFullName} />
       </View>
@@ -79,7 +93,7 @@ const RegisterScreen: React.FC = () => {
         <TextInput placeholder="Password" className="w-full p-4 rounded-lg bg-gray-100" secureTextEntry value={password} onChangeText={setPassword} />
       </View>
       <View className="w-full max-w-md mb-6">
-        <TextInput placeholder="Phone Number (Optional)" className="w-full p-4 rounded-lg bg-gray-100" value={phoneNumber} onChangeText={setPhoneNumber} />
+        <TextInput placeholder="Phone Number" className="w-full p-4 rounded-lg bg-gray-100" value={phoneNumber} onChangeText={setPhoneNumber} />
       </View>
       <View className="w-full max-w-md mb-6">
         <TextInput placeholder="Avatar URL (Optional)" className="w-full p-4 rounded-lg bg-gray-100" value={avatarUrl} onChangeText={setAvatarUrl} />

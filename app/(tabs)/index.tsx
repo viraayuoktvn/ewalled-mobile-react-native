@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Dashboard: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const router = useRouter();
 
   const [isBalanceHidden, setIsBalanceHidden] = useState<boolean>(false);
+  const [userData, setUserData] = useState<any>(null);
 
   const transactions = [
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
@@ -16,18 +18,44 @@ const Dashboard: React.FC = () => {
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
   ];
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const storedUserData = await AsyncStorage.getItem("userData");
+        if (storedUserData) {
+          setUserData(JSON.parse(storedUserData)); // Set user data to state
+        } else {
+          console.log("No user data found in AsyncStorage.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        Alert.alert("Error", "Unable to fetch user data.");
+      }
+    };
+  
+    fetchUserData();
+  }, []);  
+
+  if (!userData) {
+    return <Text>Data not found.</Text>;
+  }
+
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-4`}>
       {/* Profile & Theme Toggle */}
       <View className="mt-10 flex-row justify-between items-center">
         <View className="flex-row items-center">
-          <Image
-            source={require("../../assets/images/avatar.png")}
-            className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
-          />
+        <Image
+          source={
+            userData.avatarUrl
+              ? { uri: userData.avatarUrl }
+              : require("../../assets/images/avatar.png")
+          }
+          className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
+        />
           <View>
             <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
-              Chelsea Immanuela
+              {userData.fullname}
             </Text>
             <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
               Personal Account
@@ -50,7 +78,7 @@ const Dashboard: React.FC = () => {
       <View className="mt-6 flex-row justify-between items-center">
         <View className="flex-1">
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>
-            Good Morning, Chelsea
+            Good Morning, {userData.fullname.split(" ")[0]}
           </Text>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
             Check all your incoming and outgoing transactions here

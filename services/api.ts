@@ -8,8 +8,8 @@ export interface RegisterUserPayload {
   username: string;
   fullname: string;
   password: string;
+  phoneNumber?: string;
   avatarUrl?: string | null;
-  phoneNumber?: string | null;
 }
 
 // Define the login request payload
@@ -24,14 +24,14 @@ export interface UserResponse {
   email: string;
   username: string;
   fullname: string;
+  phoneNumber: string;
   avatarUrl: string | null;
-  phoneNumber: string | null;
 }
 
 // Define the login response type
 export interface LoginResponse {
+  message: string;
   token: string;
-  user: UserResponse;
 }
 
 // Define a generic API response type
@@ -58,10 +58,26 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
+// Function to get the token from AsyncStorage
+const getAuthToken = async () => {
+  const token = await AsyncStorage.getItem("authToken");
+  console.log("Token retrieved from AsyncStorage:", token); 
+  return token;
+};
+
 // Function to register a new user
 export const registerUser = async (userData: RegisterUserPayload): Promise<UserResponse> => {
   try {
-    const response = await api.post("/api/users", userData);
+    const token = await getAuthToken();
+    console.log("Token to be sent in register request:", token); 
+    console.log("Data being sent:", userData);
+
+    const response = await api.post("/api/auth/register", userData, {
+      headers: {
+        "Authorization": token ? `Bearer ${token}` : "",
+      },
+    });
+
     const data = response.data as ApiResponse<UserResponse>;
     return data.data;
   } catch (error: any) {
@@ -70,27 +86,30 @@ export const registerUser = async (userData: RegisterUserPayload): Promise<UserR
   }
 };
 
-export const loginUser = async ({ email, password }: LoginPayload) => {
+export const loginUser = async ({ email, password }: { email: string; password: string }) => {
   try {
-    const response = await api.post<ApiResponse<LoginResponse>>("/api/users", { email, password });
+    const response = await axios.post<LoginResponse>("http://192.168.1.8:8080/api/auth/login", {
+      email,
+      password,
+    });
 
-    if (!response.data || !response.data.data.token) {
-      throw new Error("Invalid login response");
+    console.log("Login Response:", response.data);
+
+    const token = response.data.token;
+    if (!token) {
+      throw new Error("Token tidak ditemukan di response API");
     }
 
-    const { token, user } = response.data.data;
-
+    // Store token to AsyncStorage
     await AsyncStorage.setItem("authToken", token);
-    setAuthToken(token);
 
-    console.log("Login successful:", user);
-
-    return user;
-  } catch (error: any) {
-    console.error("Login error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Failed to login.");
+    return { token };
+  } catch (error) {
+    console.error("Login error:", error);
+    return null;
   }
 };
+
 
 // Function to log out user
 export const logoutUser = async () => {

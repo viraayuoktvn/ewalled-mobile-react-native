@@ -17,13 +17,14 @@ const LoginScreen: React.FC = () => {
       Alert.alert("Error", "Email and password are required.");
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await loginUser({ email, password });
-
-      if (response && response.id) {
-        await AsyncStorage.setItem("user", JSON.stringify(response));
+  
+      if (response && response.token) {
+        await AsyncStorage.setItem("authToken", response.token);
+  
         router.replace("/(tabs)");
       } else {
         Alert.alert("Login Failed", "Invalid email or password.");
@@ -34,7 +35,7 @@ const LoginScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <View className="flex-1 bg-white justify-center items-center">
