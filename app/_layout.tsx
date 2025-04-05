@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import "@/global.css";
 import { ThemeProvider } from '../contexts/ThemeContext'; 
+import { UserProvider } from '@/contexts/UserContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,6 +34,7 @@ export default function RootLayout() {
   }
 
   return (
+    <UserProvider>
     <ThemeProvider value={{ isDarkMode, toggleTheme: () => setIsDarkMode(prev => !prev) }}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -42,5 +44,6 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    </UserProvider>
   );
 }

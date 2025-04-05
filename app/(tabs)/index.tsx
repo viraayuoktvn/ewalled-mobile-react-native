@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useRouter } from "expo-router";
+import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import api, { ApiResponse, UserResponse, WalletResponse } from "@/services/api";
 
 const Dashboard: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -10,6 +12,15 @@ const Dashboard: React.FC = () => {
 
   const [isBalanceHidden, setIsBalanceHidden] = useState<boolean>(false);
   const [userData, setUserData] = useState<any>(null);
+  const [walletData, setWalletData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Morning";
+    if (hour >= 12 && hour < 17) return "Afternoon";
+    if (hour >= 17 && hour < 21) return "Evening";
+    return "Night";
+  };
 
   const transactions = [
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
@@ -18,27 +29,60 @@ const Dashboard: React.FC = () => {
     { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
   ];
 
+  // Ambil data user dan wallet dari API
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchUserAndWallet = async () => {
       try {
-        const storedUserData = await AsyncStorage.getItem("userData");
-        if (storedUserData) {
-          setUserData(JSON.parse(storedUserData)); // Set user data to state
-        } else {
-          console.log("No user data found in AsyncStorage.");
+        const token = await AsyncStorage.getItem("authToken"); // Ambil token
+        if (!token) throw new Error("No token found");
+
+        console.log("🔑 Token Found:", token);
+
+        // Ambil data user dari API
+        const userResponse = await api.get<ApiResponse<UserResponse>>("/api/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        // Pastikan TypeScript tahu bahwa userResponse.data adalah UserResponse
+        const user = userResponse.data.data; 
+        setUserData(user);
+        console.log("✅ User Data:", user);        
+
+        // Ambil data wallet
+        const walletResponse = await api.get<ApiResponse<WalletResponse[]>>(`/api/wallets/user/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        // Pastikan TypeScript tahu bahwa walletResponse.data adalah array WalletResponse
+        const wallets = Array.isArray(walletResponse.data) ? walletResponse.data : [];
+        
+        console.log("🔎 Wallet Response:", wallets);
+
+        let userWallet = null;
+        for (const wallet of wallets) { // Pastikan 'wallets' selalu array
+          if (wallet.user.id === user.id) { 
+            userWallet = wallet;
+            break;
+          }
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        Alert.alert("Error", "Unable to fetch user data.");
+
+        if (userWallet) {
+          setWalletData(userWallet);
+          console.log("💰 Wallet Data:", userWallet);
+        } else {
+          console.warn("⚠️ No wallet found for user ID:", user.id);
+        }
+        
+      } catch (error: any) {
+        console.error("🚨 Error Fetching Data:", error.message);
+        Alert.alert("Error", "Unable to fetch user or wallet data.");
+      } finally {
+        setIsLoading(false);
       }
     };
-  
-    fetchUserData();
-  }, []);  
 
-  if (!userData) {
-    return <Text>Data not found.</Text>;
-  }
+    fetchUserAndWallet();
+  }, []);
 
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-4`}>
@@ -47,7 +91,7 @@ const Dashboard: React.FC = () => {
         <View className="flex-row items-center">
         <Image
           source={
-            userData.avatarUrl
+            userData?.avatarUrl
               ? { uri: userData.avatarUrl }
               : require("../../assets/images/avatar.png")
           }
@@ -55,7 +99,7 @@ const Dashboard: React.FC = () => {
         />
           <View>
             <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
-              {userData.fullname}
+            {userData?.fullname || "Loading..."}
             </Text>
             <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
               Personal Account
@@ -78,7 +122,7 @@ const Dashboard: React.FC = () => {
       <View className="mt-6 flex-row justify-between items-center">
         <View className="flex-1">
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>
-            Good Morning, {userData.fullname.split(" ")[0]}
+            Good {getGreeting()}, {userData?.fullname ? userData.fullname.split(" ")[0] : "User"}
           </Text>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
             Check all your incoming and outgoing transactions here
@@ -97,7 +141,7 @@ const Dashboard: React.FC = () => {
       {/* Account Number */}
       <View className="mt-4 bg-[#0061FF] p-4 rounded-[10px] flex-row justify-between items-center shadow-md shadow-[#19918F]">
         <Text className="text-white">Account No.</Text>
-        <Text className="text-white font-bold text-lg">100899</Text>
+        <Text className="text-white font-bold text-lg">{walletData?.accountNumber || "Loading..."}</Text>
       </View>
 
       {/* Balance Section */}
@@ -108,7 +152,7 @@ const Dashboard: React.FC = () => {
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
           <View className="flex-row items-center">
             <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
-              {isBalanceHidden ? "***************" : "Rp 10.000.000"}
+              {isBalanceHidden ? "***************" : `Rp ${walletData?.balance.toLocaleString() || "Loading..."}`}
             </Text>
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
               <Image source={require("../../assets/images/view.png")} className="ml-3" />
