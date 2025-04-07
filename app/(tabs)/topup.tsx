@@ -2,6 +2,9 @@ import { View, Text, TextInput, TouchableOpacity, Dimensions } from "react-nativ
 import { useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "../../contexts/ThemeContext";
+import { getWalletById, TopUpPayload, topUpWallet } from "@/services/api";
+import { useRouter } from "expo-router";
+import { useUserContext } from "@/contexts/UserContext";
 
 const { width } = Dimensions.get("window");
 
@@ -10,9 +13,41 @@ const TopUpScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<string>("BYOND Pay");
   const [amount, setAmount] = useState<string>(""); 
   const [notes, setNotes] = useState<string>("");
+  const { wallet: myWallet } = useUserContext();
 
   const isLargeScreen = width > 768;
 
+  const router = useRouter();
+
+const handleTopUp = async () => {
+  try {
+    const walletId = myWallet?.id;
+    
+    if (!walletId) {
+      alert("Wallet not found. Please re-login.");
+      return;
+    } 
+    
+    const payload: TopUpPayload = {
+      walletId,
+      transactionType: "TOP_UP",
+      amount,
+      option: selectedMethod,
+      description: notes,
+    };
+
+    await topUpWallet(payload);
+
+    // Re-fetch wallet data
+    const updatedWallet = await getWalletById(walletId);
+    console.log("Updated wallet:", updatedWallet); 
+
+    alert("Top up successful!");
+    router.push("/"); 
+  } catch (err: any) {
+    alert(err.message);
+  }
+};
   return (
     <View className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}> 
       <View
@@ -79,6 +114,7 @@ const TopUpScreen: React.FC = () => {
           width: isLargeScreen ? "50%" : "100%", 
           alignSelf: "center", 
         }}
+        onPress={handleTopUp}
       >
         <Text className="text-white text-center font-bold">Top Up</Text>
       </TouchableOpacity>

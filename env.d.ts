@@ -1,3 +1,5 @@
-declare module '@env' {
-    export const API_BASE_URL: string;
+declare namespace NodeJS {
+  interface ProcessEnv {
+    EXPO_PUBLIC_API_BASE_URL: string;
   }
+}

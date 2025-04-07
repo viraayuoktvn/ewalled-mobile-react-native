@@ -10,5 +10,5 @@ module.exports = {
       },
     },
   },
-  darkMode: "class", // Tambahkan ini
+  darkMode: "class",
 };

@@ -18,8 +18,6 @@ import { registerUser } from "@/services/api";
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
 
-const API_BASE_URL = "http://192.168.1.8:8080/api/auth/register";
-
 const RegisterScreen: React.FC = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
@@ -140,7 +138,7 @@ const RegisterScreen: React.FC = () => {
 
   return (
     <ScrollView className="flex-1 bg-white" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
-      <Image source={require("../assets/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
+      <Image source={require("../public/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
 
       <View className="w-full max-w-md mb-6">
         <TextInput
@@ -255,7 +253,7 @@ const RegisterScreen: React.FC = () => {
             {/* Header */}
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-300">
               <TouchableOpacity onPress={() => setModalVisible(false)} className="w-10">
-                <Image source={require("../assets/images/back.png")} className="w-6 h-6" />
+                <Image source={require("../public/images/back.png")} className="w-6 h-6" />
               </TouchableOpacity>
               <Text className="text-lg font-bold">Terms and Conditions</Text>
               <View className="w-10" />

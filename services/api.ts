@@ -1,7 +1,8 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE_URL } from "@env";
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+ 
 // Define a generic API response type
 export interface ApiResponse<T> {
   success: boolean;
@@ -52,6 +53,27 @@ export interface WalletResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export type TransactionResponse = {
+  id: number;
+  amount: string;
+  type: "TOP_UP" | "TRANSFER";
+  transactionDate: string;
+  senderWallet?: {
+    id: number;
+    user: {
+      id: number;
+      fullname: string;
+    };
+  };
+  receiverWallet?: {
+    id: number;
+    user: {
+      id: number;
+      fullname: string;
+    };
+  };
+};
 
 // Create an Axios instance
 const api = axios.create({
@@ -174,6 +196,32 @@ export const createWallet = async (userId: number): Promise<WalletResponse> => {
   }
 };
 
+export const getAllWallets = async () => {
+  const res = await fetch(`${API_BASE_URL}/api/wallets`);
+  if (!res.ok) throw new Error("Failed to fetch wallets");
+  return res.json();
+};
+
+// Get wallet by ID
+export const getWalletById = async (walletId: number): Promise<WalletResponse> => {
+  try {
+    const token = await getAuthToken();
+    setAuthToken(token);
+
+    const response = await api.get<ApiResponse<WalletResponse>>(`/api/wallets/${walletId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const wallet = response.data?.data || response.data;
+    if (!wallet || !wallet.id) throw new Error("Invalid wallet response format");
+
+    return wallet;
+  } catch (error: any) {
+    console.error("🚨 Get Wallet Error:", error.response?.data?.message || error.message);
+    throw new Error("Failed to fetch wallet.");
+  }
+};
+
 // **Logout User**
 export const logoutUser = async () => {
   try {
@@ -182,6 +230,59 @@ export const logoutUser = async () => {
     console.log("🚪 User Logged Out");
   } catch (error) {
     console.error("⚠️ Logout Error:", error);
+  }
+};
+
+// Define transaction payload
+export interface TopUpPayload {
+  walletId: number;
+  transactionType: "TOP_UP";
+  amount: string;
+  recipientAccountNumber?: string;
+  description?: string;
+  option: string;
+}
+
+// Function to perform top up
+export const topUpWallet = async (payload: TopUpPayload): Promise<any> => {
+  try {
+    const token = await getAuthToken();
+    setAuthToken(token);
+
+    const response = await api.post("/api/transactions", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("✅ Top Up Successful:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("🚨 Top Up Error:", error.response?.data?.message || error.message);
+    throw new Error("Top up failed.");
+  }
+};
+
+export interface TransferPayload {
+  walletId: number;
+  transactionType: "TRANSFER";
+  amount: string;
+  recipientAccountNumber: string;
+  description?: string;
+}
+
+export const transfer = async (payload: TransferPayload): Promise<any> => {
+  try {
+    const token = await getAuthToken();
+    setAuthToken(token);
+
+    const response = await api.post("/api/transactions", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("✅ Transfer Successful:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("🚨 Transfer Error:", error.response?.data?.message || error.message);
+    throw new Error("Transfer failed.");
   }
 };
 

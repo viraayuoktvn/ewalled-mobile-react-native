@@ -31,7 +31,7 @@ const LoginScreen: React.FC = () => {
         return;
       }
 
-      const userData  = response.userData; // Ambil bagian data saja
+      const userData  = response.userData; 
       const walletData = response.walletData;
 
       if (!userData || Object.keys(userData).length === 0) {
@@ -63,7 +63,7 @@ const LoginScreen: React.FC = () => {
   return (
     <View className="flex-1 bg-white justify-center items-center">
       <Image
-        source={require("../assets/images/ewalled.png")}
+        source={require("../public/images/ewalled.png")}
         className="w-[233px] h-[57px] mb-12"
       />
 

@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-import { Image, Platform, View } from 'react-native';
+import { Image } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useFonts, OpenSans_400Regular, OpenSans_700Bold } from "@expo-google-fonts/open-sans";
 import * as SplashScreen from "expo-splash-screen";
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -35,8 +34,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: Colors[isDarkMode ? 'dark' : 'light'].background, // Warna tab sesuai tema
-          borderTopWidth: 0, // Biar lebih clean
+          backgroundColor: Colors[isDarkMode ? 'dark' : 'light'].background,
+          borderTopWidth: 0,
         },
         tabBarLabelStyle: { fontFamily: "OpenSans_Regular" },
       }}
@@ -47,7 +46,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../../assets/images/plus.png')} 
+            <Image source={require('../../public/images/plus.png')} 
               style={{ width: size, height: size, tintColor: color }} 
               resizeMode="contain"
             />
@@ -68,7 +67,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../../assets/images/share.png')} 
+            <Image source={require('../../public/images/share.png')} 
               style={{ width: size, height: size, tintColor: color }} 
               resizeMode="contain"
             />
@@ -82,7 +81,7 @@ export default function TabLayout() {
           title: '',
           tabBarIcon: ({ color, size }) => (
             <Image
-              source={require('../../assets/images/logout.png')} // Ganti sama path gambar lo
+              source={require('../../public/images/logout.png')} 
               style={{ width: size, height: size, tintColor: color }}
               resizeMode="contain"
             />
