@@ -1,9 +1,9 @@
 import { View, Text, TextInput, TouchableOpacity, Dimensions } from "react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "../../contexts/ThemeContext";
 import { getWalletById, TopUpPayload, topUpWallet } from "@/services/api";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useUserContext } from "@/contexts/UserContext";
 
 const { width } = Dimensions.get("window");
@@ -19,35 +19,44 @@ const TopUpScreen: React.FC = () => {
 
   const router = useRouter();
 
-const handleTopUp = async () => {
-  try {
-    const walletId = myWallet?.id;
-    
-    if (!walletId) {
-      alert("Wallet not found. Please re-login.");
-      return;
-    } 
-    
-    const payload: TopUpPayload = {
-      walletId,
-      transactionType: "TOP_UP",
-      amount,
-      option: selectedMethod,
-      description: notes,
-    };
+  useFocusEffect(
+    useCallback(() => {
+      setAmount("");
+      setNotes("");
+      setSelectedMethod("BYOND Pay");
+    }, [])
+  );
 
-    await topUpWallet(payload);
+  const handleTopUp = async () => {
+    try {
+      const walletId = myWallet?.id;
+      
+      if (!walletId) {
+        alert("Wallet not found. Please re-login.");
+        return;
+      } 
+      
+      const payload: TopUpPayload = {
+        walletId,
+        transactionType: "TOP_UP",
+        amount,
+        option: selectedMethod,
+        description: notes,
+      };
 
-    // Re-fetch wallet data
-    const updatedWallet = await getWalletById(walletId);
-    console.log("Updated wallet:", updatedWallet); 
+      await topUpWallet(payload);
 
-    alert("Top up successful!");
-    router.push("/"); 
-  } catch (err: any) {
-    alert(err.message);
-  }
-};
+      const updatedWallet = await getWalletById(walletId);
+      console.log("Updated wallet:", updatedWallet); 
+
+      alert("Top up successful!");
+      router.push("/"); 
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+
   return (
     <View className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}> 
       <View
@@ -109,12 +118,15 @@ const handleTopUp = async () => {
 
       {/* Submit Button */}
       <TouchableOpacity
-        className="bg-[#0061FF] p-4 rounded-lg w-full max-w-md"
+        className={`p-4 rounded-lg w-full max-w-md ${
+          amount === "" ? "bg-gray-400" : "bg-[#0061FF]"
+        }`}
         style={{
-          width: isLargeScreen ? "50%" : "100%", 
-          alignSelf: "center", 
+          width: isLargeScreen ? "50%" : "100%",
+          alignSelf: "center",
         }}
         onPress={handleTopUp}
+        disabled={amount === ""}
       >
         <Text className="text-white text-center font-bold">Top Up</Text>
       </TouchableOpacity>

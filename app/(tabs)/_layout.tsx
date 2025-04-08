@@ -81,7 +81,7 @@ export default function TabLayout() {
           title: '',
           tabBarIcon: ({ color, size }) => (
             <Image
-              source={require('../../public/images/logout.png')} 
+              source={require('../../public/images/logout.png')}
               style={{ width: size, height: size, tintColor: color }}
               resizeMode="contain"
             />

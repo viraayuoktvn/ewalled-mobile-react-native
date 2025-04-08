@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import api, { ApiResponse, UserResponse, WalletResponse } from "@/services/api";
+import api, { ApiPaginatedResponse, ApiResponse, TransactionResponse, UserResponse, WalletResponse } from "@/services/api";
 import { getImage } from "@/utils/getImage";
 import { useFocusEffect } from "@react-navigation/native";
-
 
 const Dashboard: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -16,7 +15,8 @@ const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
   const [walletData, setWalletData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+  const [recentTransactions, setRecentTransactions] = useState<TransactionResponse[]>([]);
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return "Morning";
@@ -25,13 +25,6 @@ const Dashboard: React.FC = () => {
     return "Night";
   };
 
-  const transactions = [
-    { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
-    { name: "Adityo Gizwanda", type: "Topup", amount: "+ 75.000,00" },
-    { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
-    { name: "Adityo Gizwanda", type: "Transfer", amount: "- 75.000,00" },
-  ];
-
   useFocusEffect(
     useCallback(() => {
       const fetchUserAndWallet = async () => {
@@ -39,31 +32,23 @@ const Dashboard: React.FC = () => {
           setIsLoading(true);
           const token = await AsyncStorage.getItem("authToken");
           if (!token) throw new Error("No token found");
-  
-          console.log("🔑 Token Found:", token);
-  
-          // Fetch user
+
           const userResponse = await api.get<ApiResponse<UserResponse>>("/api/users/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
           const user = userResponse.data.data;
           setUserData(user);
-          console.log("✅ User Data:", user);
-  
-          // Fetch wallet
+
           const walletResponse = await api.get<ApiResponse<WalletResponse[]>>(`/api/wallets/user/${user.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-  
+
           const wallets = Array.isArray(walletResponse.data) ? walletResponse.data : [];
-  
-          console.log("🔎 Wallet Response:", wallets);
-  
+
           const userWallet = wallets.find(wallet => wallet.user.id === user.id);
-  
+
           if (userWallet) {
             setWalletData(userWallet);
-            console.log("💰 Wallet Data:", userWallet);
           } else {
             console.warn("⚠️ No wallet found for user ID:", user.id);
           }
@@ -74,27 +59,49 @@ const Dashboard: React.FC = () => {
           setIsLoading(false);
         }
       };
-  
+
       fetchUserAndWallet();
     }, [])
-  );  
+  );
+
+  useEffect(() => {
+    const fetchRecentTransactions = async () => {
+      if (!walletData) return;
+
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+        if (!token) return;
+
+        const response = await api.get<ApiPaginatedResponse<TransactionResponse[]>>(
+          "/api/transactions/filter",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { walletId: walletData.id },
+          }
+        );
+
+        const allTx = response.data.content || [];
+        const sortedTx = allTx.sort((a: TransactionResponse, b: TransactionResponse) => b.id - a.id);
+        setRecentTransactions(sortedTx.slice(0, 4));
+      } catch (err) {
+        console.error("🚨 Error fetching recent transactions:", err);
+      }
+    };
+
+    fetchRecentTransactions();
+  }, [walletData]);
 
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-4`}>
-      {/* Profile & Theme Toggle */}
       <View className="mt-10 flex-row justify-between items-center">
         <View className="flex-row items-center">
-        <Image
-          source={
-            userData?.avatarUrl
-              ? { uri: userData.avatarUrl }
-              : getImage("avatar.png")
-          }
-          className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
-        />
+          <Image
+            source={userData?.avatarUrl ? { uri: userData.avatarUrl } : getImage("avatar.png")}
+            className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
+          />
           <View>
             <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
-            {userData?.fullname || "Loading..."}
+              {userData?.fullname || "Loading..."}
             </Text>
             <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
               Personal Account
@@ -108,12 +115,11 @@ const Dashboard: React.FC = () => {
                 ? require("../../public/images/moon.png")
                 : require("../../public/images/sun2.png")
             }
-            style={{ width: 55, height: 55 }}
+            style={{ width: 50, height: 50 }}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Greeting Section */}
       <View className="mt-6 flex-row justify-between items-center">
         <View className="flex-1">
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>
@@ -133,16 +139,12 @@ const Dashboard: React.FC = () => {
         />
       </View>
 
-      {/* Account Number */}
       <View className="mt-4 bg-[#0061FF] p-4 rounded-[10px] flex-row justify-between items-center shadow-md shadow-[#19918F]">
         <Text className="text-white">Account No.</Text>
         <Text className="text-white font-bold text-lg">{walletData?.accountNumber || "Loading..."}</Text>
       </View>
 
-      {/* Balance Section */}
-      <View
-        className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}
-      >
+      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
         <View>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
           <View className="flex-row items-center">
@@ -155,7 +157,6 @@ const Dashboard: React.FC = () => {
           </View>
         </View>
         <View className="flex items-end">
-          {/* Tombol Top Up */}
           <TouchableOpacity
             className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
             onPress={() => router.push("/topup")}
@@ -163,7 +164,6 @@ const Dashboard: React.FC = () => {
             <Image source={require("../../public/images/plus.png")} className="w-7 h-7" />
           </TouchableOpacity>
 
-          {/*  Tombol Transfer */}
           <TouchableOpacity
             className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]"
             onPress={() => router.push("/transfer")}
@@ -173,44 +173,67 @@ const Dashboard: React.FC = () => {
         </View>
       </View>
 
-      {/* Transaction History */}
-      <View
-        className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}
-      >
-        <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold mb-4`}>
-          Transaction History
-        </Text>
+      <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}>
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold`}>
+            Transaction History
+          </Text>
+          <TouchableOpacity onPress={() => router.push("/transactions")}>
+            <Text className="text-blue-500 font-semibold">Show all</Text>
+          </TouchableOpacity>
+        </View>
+
         <View className="h-[1px] bg-gray-300 w-full mb-3" />
-        {transactions.map((item, i) => (
-          <View
-            key={i}
-            className="flex-row justify-between items-center border-b border-gray-300 py-3"
-          >
-            <View className="flex-row items-center">
-              <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
-              <View>
-                <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
-                  {item.name}
+
+        {recentTransactions.length === 0 ? (
+          <Text className="text-gray-500">No recent transactions found.</Text>
+        ) : (
+          recentTransactions.map((item, i) => {
+            const isTopup = item.transactionType === "TOP_UP";
+            const isSender = item.walletId === walletData?.id;
+            const isReceiver = item.recipientWalletId === walletData?.id;
+          
+            const name =
+              item.transactionType === "TOP_UP"
+                ? item.senderName
+                : isSender
+                ? item.recipientName
+                : item.senderName;
+
+          
+            const date = new Date(item.transactionDate).toLocaleDateString("id-ID", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            });
+          
+            const amount = `${isTopup || isReceiver ? "+" : "-"} ${parseInt(item.amount as any).toLocaleString("id-ID")},00`;
+            const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
+
+            return (
+              <View
+                key={i}
+                className="flex-row justify-between items-center border-b border-gray-300 py-3"
+              >
+                <View className="flex-row items-center">
+                  <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
+                  <View>
+                    <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
+                      {name || "Unknown"}
+                    </Text>
+                    <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+                      {item.transactionType === "TOP_UP" ? "Topup" : "Transfer"}
+                    </Text>
+                    <Text className="text-gray-500 text-xs">{date}</Text>
+                  </View>
+                </View>
+                <Text className={`${amountColor} font-bold`}>
+                  {amount}
                 </Text>
-                <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
-                  {item.type}
-                </Text>
-                <Text className="text-gray-500 text-xs">08 December 2024</Text>
               </View>
-            </View>
-            <Text
-              className={`${
-                item.amount.startsWith("-")
-                  ? isDarkMode
-                    ? "text-white"
-                    : "text-black"
-                  : "text-green-500"
-              } font-bold`}
-            >
-              {item.amount}
-            </Text>
-          </View>
-        ))}
+            );
+          })
+        )}
       </View>
     </ScrollView>
   );

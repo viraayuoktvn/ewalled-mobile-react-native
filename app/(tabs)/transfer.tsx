@@ -6,12 +6,13 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
-  FlatList,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { getAllWallets, transfer, WalletResponse } from "../../services/api";
 import { useUserContext } from "../../contexts/UserContext";
+import RNPickerSelect from "react-native-picker-select";
+import { useRouter, useFocusEffect } from "expo-router";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
@@ -19,40 +20,48 @@ const isLargeScreen = width > 768;
 const TransferScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const { wallet: myWallet, setWallet } = useUserContext();
+  const router = useRouter();
 
   const [amount, setAmount] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<any[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState<any>(null);
+  const [wallets, setWallets] = useState<WalletResponse[]>([]);
+  const [selectedWallet, setSelectedWallet] = useState<WalletResponse | null>(null);
+  const [isFetchingWallet, setIsFetchingWallet] = useState(true);
 
-  // Tunggu data wallet ada dulu
-  if (!myWallet) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#0061FF" />
-      </View>
-    );
-  }
+  const refreshWalletData = async () => {
+    try {
+      setIsFetchingWallet(true);
+      const allWallets = await getAllWallets();
+      const otherWallets = allWallets.filter((w: WalletResponse) => w.id !== myWallet?.id);
+      setWallets(otherWallets);
 
-  const myWalletId = myWallet.id;
-
-  useEffect(() => {
-    const fetchWallets = async () => {
-      try {
-        const allWallets = await getAllWallets();
-        const otherWallets = allWallets.filter((w: WalletResponse) => w.id !== myWalletId);
-        setWallets(otherWallets);
-      } catch (err) {
-        console.error("Failed to fetch wallets", err);
+      const updatedMyWallet = allWallets.find((w: WalletResponse) => w.id === myWallet?.id);
+      if (updatedMyWallet) {
+        console.log("Wallet balance type:", typeof updatedMyWallet.balance, updatedMyWallet.balance);
+        setWallet(updatedMyWallet);
       }
-    };
+    } catch (err) {
+      console.error("Failed to refresh wallets", err);
+      Alert.alert("Error", "Failed to load wallets.");
+    } finally {
+      setIsFetchingWallet(false);
+    }
+  };
 
-    fetchWallets();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setAmount("");
+      setNotes("");
+      setSelectedWallet(null);
+      if (myWallet) refreshWalletData();
+    }, [myWallet?.id])
+  );
 
   const handleTransfer = async () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    const numericAmount = Number(amount);
+
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid Amount", "Please enter a valid amount to transfer.");
       return;
     }
@@ -62,13 +71,23 @@ const TransferScreen: React.FC = () => {
       return;
     }
 
+    if (selectedWallet.id === myWallet?.id) {
+      Alert.alert("Invalid Transfer", "You cannot transfer to your own wallet.");
+      return;
+    }
+
+    if (numericAmount > myWallet!.balance) {
+      Alert.alert("Insufficient Balance", "You don't have enough balance to transfer.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       await transfer({
-        walletId: myWallet.id, 
+        walletId: myWallet!.id,
         transactionType: "TRANSFER",
-        amount: String(amount), 
+        amount: String(numericAmount),
         recipientAccountNumber: selectedWallet.accountNumber,
         description: notes,
       });
@@ -78,12 +97,9 @@ const TransferScreen: React.FC = () => {
       setNotes("");
       setSelectedWallet(null);
 
-      // Optional: refresh wallet balance
-      const updatedWallets = await getAllWallets();
-      const updatedMyWallet = updatedWallets.find((w: WalletResponse) => w.id === myWallet?.id);
-      if (updatedMyWallet) {
-        setWallet(updatedMyWallet);
-      }
+      await refreshWalletData();
+      router.replace("/");
+
     } catch (error: any) {
       Alert.alert("🚨 Transfer Failed", error.message || "An error occurred.");
     } finally {
@@ -91,58 +107,85 @@ const TransferScreen: React.FC = () => {
     }
   };
 
+  if (!myWallet) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0061FF" />
+      </View>
+    );
+  }
+
   return (
     <View
       className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}
       style={{ alignItems: "center" }}
     >
       <Text
-        className={`text-xl font-bold mb-6 mt-12 w-full max-w-md ${
-          isDarkMode ? "text-white" : "text-black"
-        }`}
+        className={`text-xl font-bold mb-6 mt-12 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}
       >
         Transfer
       </Text>
 
       {/* Recipient Picker */}
-      <Text
-        className={`text-sm mb-2 w-full max-w-md ${
-          isDarkMode ? "text-white" : "text-black"
-        }`}
-      >
+      <Text className={`text-sm mb-2 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}>
         Select Recipient:
       </Text>
-      <FlatList
-        data={wallets}
-        keyExtractor={(item) => item.id.toString()}
-        horizontal
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className={`p-3 m-1 rounded-md border ${
-              selectedWallet?.id === item.id
-                ? "bg-blue-500 border-blue-700"
-                : "bg-gray-200 border-gray-400"
+
+      <View className="w-full max-w-md mb-1">
+        {wallets.length === 0 ? (
+          <Text className="text-gray-500">No other wallets available for transfer.</Text>
+        ) : (
+          <View
+            className={`rounded-lg border px-3 py-2 ${
+              isDarkMode ? "bg-[#333] border-[#444]" : "bg-[#f0f0f0] border-[#ccc]"
             }`}
-            onPress={() => setSelectedWallet(item)}
           >
-            <Text
-              className={`text-sm ${
-                selectedWallet?.id === item.id ? "text-white" : "text-black"
-              }`}
-            >
-              {item.accountNumber}
-            </Text>
-          </TouchableOpacity>
+            <RNPickerSelect
+              onValueChange={(value) => {
+                const selected = wallets.find((w) => w.id === parseInt(value));
+                setSelectedWallet(selected || null);
+              }}
+              items={wallets.map((wallet) => ({
+                label: wallet.accountNumber,
+                value: String(wallet.id),
+              }))}
+              placeholder={{ label: "Choose wallet...", value: null }}
+              value={selectedWallet ? String(selectedWallet.id) : null}
+              useNativeAndroidPickerStyle={false}
+              style={{
+                inputIOS: {
+                  color: isDarkMode ? "white" : "black",
+                  fontSize: 16,
+                  paddingVertical: 10,
+                },
+                inputAndroid: {
+                  color: isDarkMode ? "white" : "black",
+                  fontSize: 16,
+                },
+                placeholder: {
+                  color: isDarkMode ? "#aaa" : "#666",
+                },
+                viewContainer: {
+                  justifyContent: "center",
+                },
+              }}
+            />
+          </View>
         )}
-        style={{ maxWidth: "100%", marginBottom: 10 }}
-      />
+        {!selectedWallet && wallets.length > 0 && (
+          <Text
+            className="text-sm mt-1"
+            style={{
+              color: isDarkMode ? "#FCA5A5" : "#DC2626",
+            }}
+          >
+            Please select a recipient wallet
+          </Text>
+        )}
+      </View>
 
       {/* Amount */}
-      <Text
-        className={`text-gray-400 mb-2 mt-4 w-full max-w-md text-left ${
-          isDarkMode ? "text-white" : "text-black"
-        }`}
-      >
+      <Text className={`text-sm mb-2 mt-4 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}>
         Amount
       </Text>
       <View
@@ -150,11 +193,7 @@ const TransferScreen: React.FC = () => {
           isDarkMode ? "border-gray-100" : "border-gray-300"
         }`}
       >
-        <Text
-          className={`text-lg mr-2 self-start ${
-            isDarkMode ? "text-white" : "text-black"
-          }`}
-        >
+        <Text className={`text-lg mr-2 self-start ${isDarkMode ? "text-white" : "text-black"}`}>
           IDR
         </Text>
         <TextInput
@@ -171,41 +210,43 @@ const TransferScreen: React.FC = () => {
       </View>
 
       {/* Balance Info */}
-      <View className={`flex-row justify-between mb-4 w-full max-w-md`}>
-        <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
-          Your Balance
-        </Text>
+      <View className="flex-row justify-between mb-4 w-full max-w-md">
+        <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>
         <Text className="text-[#0061FF] text-sm">
-          IDR {myWallet.balance.toLocaleString()}
+          {isFetchingWallet ? "Loading..." : `IDR ${myWallet.balance.toLocaleString()}`}
         </Text>
       </View>
 
       {/* Notes */}
-      <Text
-        className={`text-gray-400 mt-8 mb-4 w-full max-w-md text-left ${
-          isDarkMode ? "text-white" : "text-black"
-        }`}
-      >
+      <Text className={`text-sm mt-8 mb-4 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}>
         Notes
       </Text>
       <TextInput
         className={`border-b mb-6 text-lg w-full max-w-md ${
-          isDarkMode ? "border-gray-100" : "border-gray-300"
+          isDarkMode ? "border-gray-100" : "border-gray-200"
         }`}
-        placeholder="Optional note"
+        placeholder=""
         value={notes}
         onChangeText={setNotes}
-        style={{
-          color: isDarkMode ? "white" : "black",
-        }}
+        style={{ color: isDarkMode ? "white" : "black" }}
       />
 
       {/* Button */}
       <TouchableOpacity
-        className="p-4 rounded-lg mt-auto w-full max-w-md bg-[#0061FF]"
+        className={`p-4 rounded-lg mt-auto w-full max-w-md ${
+          isLoading || !selectedWallet || !amount || isNaN(Number(amount)) || Number(amount) <= 0
+            ? "bg-gray-400"
+            : "bg-[#0061FF]"
+        }`}
         style={{ justifyContent: "center", alignItems: "center" }}
         onPress={handleTransfer}
-        disabled={isLoading}
+        disabled={
+          isLoading ||
+          !selectedWallet ||
+          !amount ||
+          isNaN(Number(amount)) ||
+          Number(amount) <= 0
+        }
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />

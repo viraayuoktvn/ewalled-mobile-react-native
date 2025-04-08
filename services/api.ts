@@ -56,24 +56,39 @@ export interface WalletResponse {
 
 export type TransactionResponse = {
   id: number;
-  amount: string;
-  type: "TOP_UP" | "TRANSFER";
+  walletId: number;
+  transactionType: "TOP_UP" | "TRANSFER";
+  amount: number;
+  recipientWalletId?: number | null;
   transactionDate: string;
-  senderWallet?: {
-    id: number;
-    user: {
-      id: number;
-      fullname: string;
-    };
-  };
-  receiverWallet?: {
-    id: number;
-    user: {
-      id: number;
-      fullname: string;
-    };
-  };
+  description?: string;
+  option?: string;
+  senderName?: string;
+  recipientName?: string;
 };
+
+export interface PaginatedTransactionResponse {
+  content: TransactionResponse[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export interface ApiPaginatedResponse<T> {
+  status: string;
+  message: string;
+  content: T;
+}
 
 // Create an Axios instance
 const api = axios.create({
@@ -284,6 +299,44 @@ export const transfer = async (payload: TransferPayload): Promise<any> => {
     console.error("🚨 Transfer Error:", error.response?.data?.message || error.message);
     throw new Error("Transfer failed.");
   }
+};
+
+export const getTransactionsByWalletId = async (
+  walletId: number,
+  options?: {
+    token?: string;
+    type?: "TOP_UP" | "TRANSFER";
+    timeRange?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    order?: "asc" | "desc";
+  }
+): Promise<ApiResponse<PaginatedTransactionResponse>> => {
+  const token = options?.token || (await getAuthToken());
+
+  const params: Record<string, any> = {
+    walletId,
+    page: options?.page ?? 0,
+    size: options?.size ?? 10,
+    sortBy: options?.sortBy ?? "transactionDate",
+    order: options?.order ?? "desc",
+  };
+
+  if (options?.type) params.type = options.type;
+  if (options?.timeRange) params.timeRange = options.timeRange;
+
+  const response = await api.get<ApiResponse<PaginatedTransactionResponse>>(
+    `/api/transactions?walletId=${walletId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params,
+    }
+  );
+
+  return response.data;
 };
 
 export default api;

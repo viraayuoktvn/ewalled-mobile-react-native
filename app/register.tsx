@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerUser } from "@/services/api";
+import { Feather } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
@@ -137,7 +138,7 @@ const RegisterScreen: React.FC = () => {
   
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
+    <ScrollView className="flex-1 bg-white p-10" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
       <Image source={require("../public/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
 
       <View className="w-full max-w-md mb-6">
@@ -252,8 +253,8 @@ const RegisterScreen: React.FC = () => {
           <View className="w-full bg-white rounded-lg h-full p-4">
             {/* Header */}
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-300">
-              <TouchableOpacity onPress={() => setModalVisible(false)} className="w-10">
-                <Image source={require("../public/images/back.png")} className="w-6 h-6" />
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Feather name="arrow-left" size={24} color= "black" />
               </TouchableOpacity>
               <Text className="text-lg font-bold">Terms and Conditions</Text>
               <View className="w-10" />

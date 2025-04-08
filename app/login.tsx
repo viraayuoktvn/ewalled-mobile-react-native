@@ -61,7 +61,7 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-white justify-center items-center">
+    <View className="flex-1 bg-white justify-center items-center p-10">
       <Image
         source={require("../public/images/ewalled.png")}
         className="w-[233px] h-[57px] mb-12"
