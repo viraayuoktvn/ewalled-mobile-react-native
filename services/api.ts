@@ -90,6 +90,30 @@ export interface ApiPaginatedResponse<T> {
   content: T;
 }
 
+// Wallet Summary DTO
+export interface WalletSummaryDTO {
+  totalIncome: number;
+  totalOutcome: number;
+  balance: number;
+}
+
+export interface BalanceGraphResponse {
+  label: string;
+  income: number;
+  outcome: number;
+  incomePercent: number;
+  outcomePercent: number;
+}
+
+export interface BalanceGraphResult {
+  walletId: number;
+  view: string;
+  year: number;
+  month: string;
+  maxValue: number;
+  data: BalanceGraphResponse[];
+}
+
 // Create an Axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -333,6 +357,46 @@ export const getTransactionsByWalletId = async (
         Authorization: `Bearer ${token}`,
       },
       params,
+    }
+  );
+
+  return response.data;
+};
+
+// 🔍 Get Wallet Summary
+export const getWalletSummary = async (
+  walletId: number
+): Promise<WalletSummaryDTO> => {
+  const token = await getAuthToken();
+  setAuthToken(token);
+
+  const response = await api.get<WalletSummaryDTO>(
+    `/api/transactions/summary/${walletId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  return response.data;
+};
+
+// 📊 Get Balance Graph
+export const getBalanceGraph = async (params: {
+  view: "quartarly" | "monthly" | "weekly";
+  year: number;
+  month?: string;
+  walletId: number;
+}): Promise<ApiResponse<BalanceGraphResult[]>> => {
+  const token = await getAuthToken();
+  setAuthToken(token);
+
+  const response = await api.post<ApiResponse<BalanceGraphResult[]>>(
+    "/api/transactions/graph",
+    params,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 

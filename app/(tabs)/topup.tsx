@@ -49,8 +49,8 @@ const TopUpScreen: React.FC = () => {
       const updatedWallet = await getWalletById(walletId);
       console.log("Updated wallet:", updatedWallet); 
 
-      alert("Top up successful!");
-      router.push("/"); 
+      // alert("Top up successful!");
+      router.push("/proof"); 
     } catch (err: any) {
       alert(err.message);
     }
@@ -67,7 +67,7 @@ const TopUpScreen: React.FC = () => {
         }}
       >
         {/* Header */}
-        <Text className={`text-xl font-bold mb-12 mt-6 ${isDarkMode ? "text-white" : "text-black"} text-left`}>Top Up</Text>
+        <Text className={`text-xl font-bold mb-12  ${isDarkMode ? "text-white" : "text-black"} text-left`}>Top Up</Text>
 
         {/* Amount Input */}
         <Text className={`text-gray-400 mb-2 ${isDarkMode ? "text-white" : "text-black"}`}>Amount</Text>

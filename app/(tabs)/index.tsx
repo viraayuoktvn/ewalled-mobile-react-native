@@ -92,11 +92,11 @@ const Dashboard: React.FC = () => {
   }, [walletData]);
 
   return (
-    <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-4`}>
-      <View className="mt-10 flex-row justify-between items-center">
+    <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}>
+      <View className="mt-6 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Image
-            source={userData?.avatarUrl ? { uri: userData.avatarUrl } : getImage("avatar.png")}
+            source={userData?.avatarUrl ? { uri: userData.avatarUrl } : getImage("default-avatar.png")}
             className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
           />
           <View>
@@ -120,9 +120,9 @@ const Dashboard: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View className="mt-6 flex-row justify-between items-center">
+      <View className="mt-6 flex-row justify-between items-center p-">
         <View className="flex-1">
-          <Text className={`${isDarkMode ? "text-white" : "text-black"} text-xl font-bold`}>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
             Good {getGreeting()}, {userData?.fullname ? userData.fullname.split(" ")[0] : "User"}
           </Text>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>

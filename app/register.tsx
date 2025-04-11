@@ -262,23 +262,23 @@ const RegisterScreen: React.FC = () => {
 
             {/* Scrollable Content */}
             <ScrollView style={{ maxHeight: 1000 }} className="mt-4">
-            <Text className="text-black text-justify mb-4">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-              when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
-              It has survived not only five centuries, but also the leap into electronic typesetting, 
-              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset 
-              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like 
-              Aldus PageMaker including versions of Lorem Ipsum.
+              <Text className="text-black text-justify mb-4">
+              Please read these terms and conditions ("terms and conditions", "terms") 
+              carefully before using Walled mobile application ("app", "service") operated 
+              by Walled ("us", "we", "our").
+              </Text>
+              <Text className="text-black font-bold text-justify mb-4">
+              1. Conditions of use
+              By using this app, you certify that you have read and reviewed this Agreement and that you agree to comply 
+              with its terms. If you do not want to be bound by the terms of this Agreement, you are advised to stop using 
+              the app accordingly. Walled only grants use and access of this app, its products, and its services to those who 
+              have accepted its terms.
               </Text>
               <Text className="text-black text-justify mb-4">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-              when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
-              It has survived not only five centuries, but also the leap into electronic typesetting, 
-              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset 
-              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like 
-              Aldus PageMaker including versions of Lorem Ipsum.
+              By using this app, you certify that you have read and reviewed this Agreement and that you agree to comply 
+              with its terms. If you do not want to be bound by the terms of this Agreement, you are advised to stop using 
+              the app accordingly. Walled only grants use and access of this app, its products, and its services to those who 
+              have accepted its terms.
               </Text>
               <Text className="text-black text-justify mb-4">
               Lorem Ipsum is simply dummy text of the printing and typesetting industry. 

@@ -6,5 +6,5 @@ import { imageMap } from "./imageMap";
       return { uri: `/images/${name}` };
     }
   
-    return imageMap[name] || imageMap["avatar.png"];
+    return imageMap[name] || imageMap["default-avatar.png"];
   };

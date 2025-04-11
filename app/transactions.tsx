@@ -129,7 +129,7 @@ const Transactions = () => {
     return (
       <View
         key={index}
-        className={`rounded-2xl px-4 py-3 mb-2 shadow-sm ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
+        className={`rounded-2xl p-8 py-3 mb-2 shadow-sm ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
       >
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
@@ -161,7 +161,7 @@ const Transactions = () => {
       )}
 
       {showDateDropdown && (
-        <View className={`absolute top-[115px] left-4 z-20 w-40 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
+        <View className={`absolute top-[115px] left-4 z-20 w-0 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
           <TouchableOpacity onPress={() => { setSortOrder("DESC"); setShowDateDropdown(false); }}>
             <Text className={`py-1 ${isDarkMode ? "text-white" : "text-black"}`}>Terbaru</Text>
           </TouchableOpacity>
@@ -186,7 +186,7 @@ const Transactions = () => {
       )}
 
       <ScrollView className={`${isDarkMode ? "bg-black" : "bg-[#f9f9f9]"} p-4 h-full`} contentContainerStyle={{ paddingBottom: 100 }}>
-        <View className="flex-row items-center mb-8 mt-10">
+        <View className="flex-row items-center mb-8 mt-2">
           <TouchableOpacity onPress={() => router.push("/")}>
             <Feather name="arrow-left" size={24} color={isDarkMode ? "white" : "black"} />
           </TouchableOpacity>
@@ -235,7 +235,7 @@ const Transactions = () => {
 
             <View
               className={`flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1 ${
-                isDarkMode ? "bg-gray-800" : "bg-[#FDD97C]"
+                isDarkMode ? "bg-gray-800" : "bg-[#fffff]"
               }`}
             >
               <TouchableOpacity
@@ -245,7 +245,7 @@ const Transactions = () => {
                   currentPage === 1
                     ? isDarkMode
                       ? "bg-gray-800 border-gray-600"
-                      : "bg-[#E9E9E9] border-gray-300"
+                      : "bg-[#fffff] border-gray-300"
                     : isDarkMode
                     ? "bg-transparent border-gray-400"
                     : "bg-transparent border-[#0061FF]"
@@ -254,7 +254,7 @@ const Transactions = () => {
                 <Text
                   className={`text-sm font-semibold ${
                     currentPage === 1
-                      ? "text-gray-400"
+                      ? "text-gray-500"
                       : isDarkMode
                       ? "text-white"
                       : "text-[#0061FF]"
@@ -302,7 +302,7 @@ const Transactions = () => {
                   currentPage === totalPages
                     ? isDarkMode
                       ? "bg-gray-800 border-gray-600"
-                      : "bg-[#E9E9E9] border-gray-300"
+                      : "bg-[#ffff] border-gray-300"
                     : isDarkMode
                     ? "bg-transparent border-gray-400"
                     : "bg-transparent border-[#0061FF]"
@@ -311,7 +311,7 @@ const Transactions = () => {
                 <Text
                   className={`text-sm font-semibold ${
                     currentPage === totalPages
-                      ? "text-gray-400"
+                      ? "text-gray-500"
                       : isDarkMode
                       ? "text-white"
                       : "text-[#0061FF]"

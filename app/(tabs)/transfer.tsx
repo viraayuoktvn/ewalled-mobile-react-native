@@ -98,7 +98,7 @@ const TransferScreen: React.FC = () => {
       setSelectedWallet(null);
 
       await refreshWalletData();
-      router.replace("/");
+      router.replace("/proof");
 
     } catch (error: any) {
       Alert.alert("🚨 Transfer Failed", error.message || "An error occurred.");
@@ -121,7 +121,7 @@ const TransferScreen: React.FC = () => {
       style={{ alignItems: "center" }}
     >
       <Text
-        className={`text-xl font-bold mb-6 mt-12 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}
+        className={`text-xl font-bold mb-6 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}
       >
         Transfer
       </Text>
