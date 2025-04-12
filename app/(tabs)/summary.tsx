@@ -85,8 +85,8 @@ const SummaryPage = () => {
     card: isDarkMode ? "#1f1f1f" : "#ffffff",
     text: isDarkMode ? "#ffffff" : "#000000",
     secondary: isDarkMode ? "#c0c0c0" : "#4b5563",
-    income: "#3B82F6",
-    outcome: "#D1D5DB",
+    income: "#0061FF",
+    outcome: "#D4D4D4",
     switcher: isDarkMode ? "#2c2c2c" : "#e5e7eb",
   };
 

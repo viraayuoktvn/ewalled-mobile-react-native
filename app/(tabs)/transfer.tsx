@@ -27,6 +27,7 @@ const TransferScreen: React.FC = () => {
 
   const [amount, setAmount] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [wallets, setWallets] = useState<WalletResponse[]>([]);
   const [selectedWallet, setSelectedWallet] = useState<WalletResponse | null>(null);
@@ -58,10 +59,26 @@ const TransferScreen: React.FC = () => {
       setNotes("");
       setSelectedWallet(null);
       if (myWallet) refreshWalletData();
+      setErrorMessage("");
     }, [myWallet?.id])
   );
 
+  const handleAmountChange = (text: string) => {
+    setAmount(text);
+    setErrorMessage(""); 
+
+    // Convert text input to number to validate
+    const amountValue = parseFloat(text);
+
+    if (amountValue < 10000) {
+      setErrorMessage("Minimum transaction is IDR 10,000");
+    } else if (amountValue > 2000000) {
+      setErrorMessage("Maximum transaction is IDR 2,000,000");
+    }
+  };
+
   const handleTransfer = async () => {
+    if (amount === "" || errorMessage) return; 
     const numericAmount = Number(amount);
 
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
@@ -187,10 +204,7 @@ const TransferScreen: React.FC = () => {
           )}
           {!selectedWallet && wallets.length > 0 && (
             <Text
-              className="text-sm mt-1"
-              style={{
-                color: isDarkMode ? "#FCA5A5" : "#DC2626",
-              }}
+              className="text-sm mt-1 text-red-500"
             >
               Please select a recipient wallet
             </Text>
@@ -201,7 +215,7 @@ const TransferScreen: React.FC = () => {
           Amount
         </Text>
         <View
-          className={`flex-row items-center border-b pb-2 mb-2 w-full max-w-md ${
+          className={`flex-row border-b pb-2 mb-2 w-full max-w-md ${
             isDarkMode ? "border-gray-100" : "border-gray-300"
           }`}
         >
@@ -213,13 +227,22 @@ const TransferScreen: React.FC = () => {
             keyboardType="numeric"
             placeholder="0"
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={handleAmountChange}
             style={{
               fontSize: isLargeScreen ? 50 : 40,
               color: isDarkMode ? "white" : "black",
             }}
           />
         </View>
+
+        {/* Display Error Message if Amount is Invalid */}
+        {errorMessage ? (
+          <View className="w-full max-w-md flex-row justify-start mb-4">
+            <Text className="text-red-500" style={{ fontSize: 14 }}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : null}
 
         <View className="flex-row justify-between mb-4 w-full max-w-md">
           <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>

@@ -23,6 +23,7 @@ const TopUpScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<string>("BYOND Pay");
   const [amount, setAmount] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const { wallet: myWallet } = useUserContext();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,11 +35,26 @@ const TopUpScreen: React.FC = () => {
       setAmount("");
       setNotes("");
       setSelectedMethod("BYOND Pay");
+      setErrorMessage("");
     }, [])
   );
 
+  const handleAmountChange = (text: string) => {
+    setAmount(text);
+    setErrorMessage(""); 
+
+    // Convert text input to number to validate
+    const amountValue = parseFloat(text);
+
+    if (amountValue < 10000) {
+      setErrorMessage("Minimum transaction is IDR 10,000");
+    } else if (amountValue > 2000000) {
+      setErrorMessage("Maximum transaction is IDR 2,000,000");
+    }
+  };
+
   const handleTopUp = async () => {
-    if (amount === "") return;
+    if (amount === "" || errorMessage) return; 
 
     setIsLoading(true);
     try {
@@ -58,10 +74,11 @@ const TopUpScreen: React.FC = () => {
       };
 
       await topUpWallet(payload);
-      await getWalletById(walletId); // Optional update call
+      await getWalletById(walletId);
       router.push("/proof");
     } catch (err: any) {
-      alert(err.message);
+      const msg = err?.response?.data?.message || err.message;
+      setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
@@ -85,28 +102,20 @@ const TopUpScreen: React.FC = () => {
               alignSelf: "center",
             }}
           >
-            {/* Header */}
             <Text
-              className={`text-xl font-bold mb-12 ${
-                isDarkMode ? "text-white" : "text-black"
-              } text-left`}
+              className={`text-xl font-bold mb-12 ${isDarkMode ? "text-white" : "text-black"} text-left`}
             >
               Top Up
             </Text>
 
-            {/* Amount Input */}
             <Text
-              className={`text-gray-400 mb-2 ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-gray-400 mb-2 ${isDarkMode ? "text-white" : "text-black"}`}
             >
               Amount
             </Text>
             <View className="flex-row items-center border-b border-gray-100 pb-2 mb-6">
               <Text
-                className={`text-lg mr-2 self-start ${
-                  isDarkMode ? "text-white" : "text-black"
-                }`}
+                className={`text-lg mr-2 self-start ${isDarkMode ? "text-white" : "text-black"}`}
               >
                 IDR
               </Text>
@@ -115,7 +124,7 @@ const TopUpScreen: React.FC = () => {
                 keyboardType="numeric"
                 placeholder="0"
                 value={amount}
-                onChangeText={setAmount}
+                onChangeText={handleAmountChange}
                 style={{
                   fontSize: isLargeScreen ? 50 : 40,
                   color: isDarkMode ? "white" : "black",
@@ -123,11 +132,15 @@ const TopUpScreen: React.FC = () => {
               />
             </View>
 
-            {/* Payment Method */}
+            {/* Display Error Message if Amount is Invalid */}
+            {errorMessage ? (
+              <Text className="text-red-500 mb-4" style={{ fontSize: 14 }}>
+                {errorMessage}
+              </Text>
+            ) : null}
+
             <Text
-              className={`text-gray-400 mb-3 ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-gray-400 mb-3 ${isDarkMode ? "text-white" : "text-black"}`}
             >
               Payment Method
             </Text>
@@ -152,11 +165,8 @@ const TopUpScreen: React.FC = () => {
               </Picker>
             </View>
 
-            {/* Notes Input */}
             <Text
-              className={`text-gray-400 mt-4 mb-4 ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-gray-400 mt-4 mb-4 ${isDarkMode ? "text-white" : "text-black"}`}
             >
               Notes
             </Text>
@@ -171,18 +181,15 @@ const TopUpScreen: React.FC = () => {
             />
           </View>
 
-          {/* Top Up Button */}
           <TouchableOpacity
-            className={`p-4 rounded-lg w-full max-w-md ${
-              amount === "" || isLoading ? "bg-gray-400" : "bg-[#0061FF]"
-            }`}
+            className={`p-4 rounded-lg w-full max-w-md ${amount === "" || isLoading || errorMessage ? "bg-gray-400" : "bg-[#0061FF]"}`}
             style={{
               width: isLargeScreen ? "50%" : "100%",
               alignSelf: "center",
-              marginTop: 20,
+              marginTop: 10,
             }}
             onPress={handleTopUp}
-            disabled={amount === "" || isLoading}
+            disabled={amount === "" || isLoading || !errorMessage}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
