@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import {
   VictoryBar,
   VictoryChart,
@@ -8,6 +14,7 @@ import {
   VictoryTheme,
   VictoryLabel,
 } from "victory-native";
+import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserContext } from "@/contexts/UserContext";
 import {
@@ -33,8 +40,13 @@ const SummaryPage = () => {
   const { isDarkMode } = useTheme();
   const { user, wallet } = useUserContext();
 
-  const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalOutcome: 0 });
+  const [summary, setSummary] = useState({
+    balance: 0,
+    totalIncome: 0,
+    totalOutcome: 0,
+  });
   const [year, setYear] = useState(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [view, setView] = useState<ViewType>("quartal");
   const [graphData, setGraphData] = useState<GraphBarData[]>([]);
 
@@ -69,6 +81,11 @@ const SummaryPage = () => {
           return { ...d, label };
         });
         setGraphData(mapped);
+
+        // Kumpulkan daftar tahun dari data
+        const years = result.map((item) => item.year).filter(Boolean);
+        const uniqueYears = Array.from(new Set([year, ...years])).sort((a, b) => b - a);
+        setAvailableYears(uniqueYears);
       }
     } catch (error) {
       console.error("❌ Error fetching graph:", error);
@@ -151,15 +168,37 @@ const SummaryPage = () => {
         ))}
       </View>
 
-      <TouchableOpacity
-        className="py-3 px-4 rounded-xl mb-4"
-        style={{ backgroundColor: colors.switcher }}
-        onPress={() => setYear(year === 2024 ? 2025 : 2024)}
-      >
-        <Text style={{ color: colors.text }} className="text-center font-medium">
-          Choose a Year: {year}
+      <View className="mb-4">
+        <Text style={{ color: colors.text }} className="font-semibold mb-2">
+          Choose a Year
         </Text>
-      </TouchableOpacity>
+        <View
+          className="mb-6 p-2"
+          style={{
+            backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
+            borderRadius: 30,
+          }}
+        >
+          <Picker
+            selectedValue={year}
+            onValueChange={(itemValue) => setYear(itemValue)}
+            mode="dropdown"
+            style={{
+              backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
+              color: isDarkMode ? "white" : "black",
+            }}
+            dropdownIconColor={isDarkMode ? "#2c2c2c" : "#000000"}
+            itemStyle={{
+              backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
+              color: isDarkMode ? "#2c2c2c" : "#000000",
+            }}
+          >
+            {availableYears.map((y) => (
+              <Picker.Item key={y} label={`${y}`} value={y} />
+            ))}
+          </Picker>
+        </View>
+      </View>
 
       <View className="p-8 rounded-2xl shadow mb-10" style={{ backgroundColor: colors.card }}>
         <ScrollView

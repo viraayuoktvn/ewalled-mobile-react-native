@@ -6,6 +6,14 @@ import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+// Create an Axios instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
  
 // Define a generic API response type
 export interface ApiResponse<T> {
@@ -119,14 +127,6 @@ export interface BalanceGraphResult {
   maxValue: number;
   data: BalanceGraphResponse[];
 }
-
-// Create an Axios instance
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 // Function to set Authorization Token
 export const setAuthToken = (token: string | null) => {

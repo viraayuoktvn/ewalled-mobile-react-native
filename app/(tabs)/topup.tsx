@@ -181,15 +181,18 @@ const TopUpScreen: React.FC = () => {
             />
           </View>
 
+          {/* Top Up Button */}
           <TouchableOpacity
-            className={`p-4 rounded-lg w-full max-w-md ${amount === "" || isLoading || errorMessage ? "bg-gray-400" : "bg-[#0061FF]"}`}
+            className={`p-4 rounded-lg w-full max-w-md ${
+              amount === "" || isLoading ? "bg-gray-400" : "bg-[#0061FF]"
+            }`}
             style={{
               width: isLargeScreen ? "50%" : "100%",
               alignSelf: "center",
-              marginTop: 10,
+              marginTop: 20,
             }}
             onPress={handleTopUp}
-            disabled={amount === "" || isLoading || !errorMessage}
+            disabled={amount === "" || isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
