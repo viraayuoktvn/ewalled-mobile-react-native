@@ -1,5 +1,9 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from "expo-sharing";
+import * as WebBrowser from "expo-web-browser";
+import { Platform } from "react-native";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
  
@@ -63,8 +67,10 @@ export type TransactionResponse = {
   transactionDate: string;
   description?: string;
   option?: string;
-  senderName?: string;
-  recipientName?: string;
+  senderAccountNumber?: string;
+  senderFullname?: string;
+  receiverAccountNumber?: string;
+  receiverFullname?: string;
 };
 
 export interface PaginatedTransactionResponse {
@@ -382,7 +388,7 @@ export const getWalletSummary = async (
 
 // 📊 Get Balance Graph
 export const getBalanceGraph = async (params: {
-  view: "quartarly" | "monthly" | "weekly";
+  view: "quartal" | "monthly" | "weekly";
   year: number;
   month?: string;
   walletId: number;
@@ -401,6 +407,52 @@ export const getBalanceGraph = async (params: {
   );
 
   return response.data;
+};
+
+// Download Transaction Proof
+export const downloadTransactionProof = async (transactionId: number, token: string) => {
+  const url = `${API_BASE_URL}/api/transactions/export-pdf/${transactionId}`;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    // Accept: "application/pdf",
+  };
+
+  if (Platform.OS === "web") {
+    const response = await axios.get(url, {
+      headers,
+      responseType: "blob",
+    });
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", `transaction-${transactionId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    const downloadResumable = FileSystem.createDownloadResumable(
+      url,
+      FileSystem.documentDirectory + `transaction-${transactionId}.pdf`,
+      { headers }
+    );
+
+    const result = await downloadResumable.downloadAsync();
+
+    if (result?.uri) {
+      console.log("✅ PDF saved to:", result.uri);
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(result.uri);
+      } else {
+        await WebBrowser.openBrowserAsync(result.uri);
+      }
+    } else {
+      throw new Error("❌ Gagal mendownload file PDF.");
+    }
+  }
 };
 
 export default api;

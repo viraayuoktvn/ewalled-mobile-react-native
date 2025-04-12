@@ -195,12 +195,11 @@ const Dashboard: React.FC = () => {
           
             const name =
               item.transactionType === "TOP_UP"
-                ? item.senderName
+                ? item.senderFullname
                 : isSender
-                ? item.recipientName
-                : item.senderName;
+                ? item.receiverFullname
+                : item.senderFullname;
 
-          
             const date = new Date(item.transactionDate).toLocaleDateString("id-ID", {
               day: "2-digit",
               month: "long",

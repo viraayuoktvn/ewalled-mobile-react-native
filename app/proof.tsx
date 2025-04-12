@@ -1,23 +1,24 @@
+// TransactionSuccess.tsx
 import React, { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    Image,
-    ScrollView,
-    useWindowDimensions,
-    SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  useWindowDimensions,
+  SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "@/contexts/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, {
-    UserResponse,
-    WalletResponse,
-    TransactionResponse,
+  UserResponse,
+  WalletResponse,
+  TransactionResponse,
+  downloadTransactionProof,
 } from "@/services/api";
 import { router } from "expo-router";
-import * as Linking from "expo-linking";
 
 const TransactionSuccess: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -27,8 +28,7 @@ const TransactionSuccess: React.FC = () => {
 
   const [userData, setUserData] = useState<UserResponse | null>(null);
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
-  const [latestTransaction, setLatestTransaction] =
-    useState<TransactionResponse | null>(null);
+  const [latestTransaction, setLatestTransaction] = useState<TransactionResponse | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,9 +46,7 @@ const TransactionSuccess: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const wallets = Array.isArray(walletRes.data)
-          ? walletRes.data
-          : [];
+        const wallets = Array.isArray(walletRes.data) ? walletRes.data : [];
         const userWallet = wallets.find(
           (w: WalletResponse) => w.user.id === user.id
         );
@@ -73,22 +71,26 @@ const TransactionSuccess: React.FC = () => {
     fetchData();
   }, []);
 
-
-    const handleDownload = async () => {
-    const id = latestTransaction?.id;
-    if (!id) return;
+  const handleDownload = async () => {
+    if (!latestTransaction) {
+      console.warn("⚠️ No latestTransaction available");
+      return;
+    }
 
     const token = await AsyncStorage.getItem("authToken");
-    const downloadUrl = `${api.defaults.baseURL}/api/transactions/export-pdf/${id}`;
+    if (!token) {
+      alert("Token tidak ditemukan. Silakan login kembali.");
+      return;
+    }
 
     try {
-        // include token jika backend kamu perlu auth (opsional)
-        const finalUrl = `${downloadUrl}?token=${token}`;
-        await Linking.openURL(finalUrl);
-    } catch (error) {
-        console.error("Failed to open URL", error);
+      await downloadTransactionProof(latestTransaction.id, token);
+      alert("Download berhasil!");
+    } catch (err: any) {
+      console.error("❌ Error during download:", err);
+      alert("Download failed. Please try again later.");
     }
-    };
+  };
 
   const formattedDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -115,14 +117,14 @@ const TransactionSuccess: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full max-w-[600px] px-5 pt-5">
-            <View className="w-full overflow-hidden rounded-2xl">
-                <Image
-                    source={require("../public/images/navbar-success.png")}
-                    style={{ width: "100%", height: 200 }}
-                    resizeMode="cover"
-                />
-            </View>
+        <View className="w-full max-w-[600px]">
+          <View className="w-full overflow-hidden">
+            <Image
+              source={require("../public/images/navbar-success.png")}
+              style={{ width: "100%", height: 200 }}
+              resizeMode="cover"
+            />
+          </View>
           <Text
             className={`text-xl font-bold text-center mt-4 ${
               isDarkMode ? "text-white" : "text-black"
@@ -139,7 +141,7 @@ const TransactionSuccess: React.FC = () => {
           </Text>
 
           <View
-            className={`w-full rounded-2xl mt-5 p-4 shadow-md ${
+            className={`rounded-2xl m-6 p-8 shadow-md ${
               isDarkMode ? "bg-[#1a1a1a]" : "bg-white"
             }`}
           >
@@ -148,24 +150,37 @@ const TransactionSuccess: React.FC = () => {
               value={`Rp ${latestTransaction.amount.toLocaleString()}`}
               dark={isDarkMode}
             />
-            <Row
-              label="Recipient"
-              value={latestTransaction.recipientName || "-"}
-              sub={latestTransaction.recipientWalletId?.toString()}
-              dark={isDarkMode}
-            />
+
+            {latestTransaction.transactionType === "TOP_UP" ? (
+              <Row
+                label="From"
+                value={latestTransaction.option || latestTransaction.description || "-"}
+                dark={isDarkMode}
+              />
+            ) : (
+              <>
+                <Row
+                  label="Recipient"
+                  value={latestTransaction.receiverFullname || "-"}
+                  sub={latestTransaction.receiverAccountNumber}
+                  dark={isDarkMode}
+                />
+                {showDetail && (
+                  <Row
+                    label="Sender"
+                    value={latestTransaction.senderFullname || userData.fullname}
+                    sub={latestTransaction.senderAccountNumber || walletData?.accountNumber}
+                    dark={isDarkMode}
+                  />
+                )}
+              </>
+            )}
 
             {showDetail && (
               <>
                 <Row
-                  label="Sender"
-                  value={userData.fullname}
-                  sub={walletData?.accountNumber}
-                  dark={isDarkMode}
-                />
-                <Row
                   label="Transaction Id"
-                  value={`F${latestTransaction.id}`}
+                  value={`${latestTransaction.id}`}
                   dark={isDarkMode}
                 />
                 <Row
@@ -195,11 +210,12 @@ const TransactionSuccess: React.FC = () => {
           </View>
 
           <View
-            className={`w-full justify-between items-center mt-4 px-12 ${
-              width > 500 ? "flex-row" : "flex-col"
+            className={`w-full justify-between items-center px-12 ${
+              width > 400 ? "flex-row" : "flex-col"
             }`}
           >
             <TouchableOpacity
+              onPress={handleDownload}
               className={`p-3 rounded-full ${
                 isDarkMode ? "bg-gray-700" : "bg-gray-200"
               }`}
@@ -212,7 +228,7 @@ const TransactionSuccess: React.FC = () => {
 
             <TouchableOpacity
               onPress={() => router.replace("/")}
-              className="bg-blue-600 px-6 py-3 rounded-xl min-w-[120px] items-center"
+              className="bg-blue-600 px-6 py-3 rounded-xl min-w-[120px] items-center mt-4"
             >
               <Text className="text-white font-bold">Done</Text>
             </TouchableOpacity>
@@ -221,7 +237,7 @@ const TransactionSuccess: React.FC = () => {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const Row = ({
   label,
@@ -234,19 +250,29 @@ const Row = ({
   sub?: string;
   dark: boolean;
 }) => (
-  <View className="mb-3">
-    <Text className={`text-xs ${dark ? "text-gray-400" : "text-gray-500"}`}>
+  <View
+    className={`flex-row justify-between items-center py-2 border-b ${
+      dark ? "border-gray-700" : "border-gray-300"
+    }`}
+  >
+    <Text
+      className={`text-sm font-normal w-1/2 ${
+        dark ? "text-gray-400" : "text-gray-500"
+      }`}
+    >
       {label}
     </Text>
-    <View>
+    <View className="items-end w-1/2">
       <Text
-        className={`text-base font-semibold ${
+        className={`text-sm font-semibold ${
           dark ? "text-white" : "text-black"
         }`}
       >
         {value}
       </Text>
-      {sub && <Text className="text-xs text-gray-500">{sub}</Text>}
+      {sub && (
+        <Text className="text-xs mt-1 text-gray-500">{sub}</Text>
+      )}
     </View>
   </View>
 );

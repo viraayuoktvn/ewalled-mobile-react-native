@@ -27,6 +27,7 @@ const RegisterScreen: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -185,18 +186,30 @@ const RegisterScreen: React.FC = () => {
       </View>
 
       <View className="w-full max-w-md mb-6">
-        <TextInput
-          placeholder="Password"
-          className="w-full p-4 rounded-lg bg-gray-100"
-          secureTextEntry
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            validateInput("password", text);
-          }}
-          onBlur={() => validateInput("password", password)}
-        />
-        {errors.password ? <Text className="text-[#FF0000] mt-1 ml-2">{errors.password}</Text> : null}
+        <View className="flex-row items-center bg-gray-100 rounded-lg">
+          <TextInput
+            placeholder="Password"
+            className="flex-1 p-4"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              validateInput("password", text);
+            }}
+            onBlur={() => validateInput("password", password)}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Feather
+              name={showPassword ? "eye-off" : "eye"}
+              className="px-5"
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
+        {errors.password ? (
+          <Text className="text-[#FF0000] mt-1 ml-2">{errors.password}</Text>
+        ) : null}
       </View>
 
       <View className="w-full max-w-md mb-6">
@@ -269,10 +282,6 @@ const RegisterScreen: React.FC = () => {
               </Text>
               <Text className="text-black font-bold text-justify mb-4">
               1. Conditions of use
-              By using this app, you certify that you have read and reviewed this Agreement and that you agree to comply 
-              with its terms. If you do not want to be bound by the terms of this Agreement, you are advised to stop using 
-              the app accordingly. Walled only grants use and access of this app, its products, and its services to those who 
-              have accepted its terms.
               </Text>
               <Text className="text-black text-justify mb-4">
               By using this app, you certify that you have read and reviewed this Agreement and that you agree to comply 
@@ -280,32 +289,25 @@ const RegisterScreen: React.FC = () => {
               the app accordingly. Walled only grants use and access of this app, its products, and its services to those who 
               have accepted its terms.
               </Text>
-              <Text className="text-black text-justify mb-4">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-              when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
-              It has survived not only five centuries, but also the leap into electronic typesetting, 
-              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset 
-              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like 
-              Aldus PageMaker including versions of Lorem Ipsum.
+              <Text className="text-black font-bold text-justify mb-4">
+              2. Privacy policy
               </Text>
               <Text className="text-black text-justify mb-4">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-              when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
-              It has survived not only five centuries, but also the leap into electronic typesetting, 
-              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset 
-              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like 
-              Aldus PageMaker including versions of Lorem Ipsum.
+              Before you continue using our app, we advise you to read our privacy policy regarding our user data collection. 
+              It will help you better understand our practices.
+              </Text>              
+              <Text className="text-black font-bold text-justify mb-4">
+              3. Intellectual property
               </Text>
               <Text className="text-black text-justify mb-4">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-              when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
-              It has survived not only five centuries, but also the leap into electronic typesetting, 
-              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset 
-              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like 
-              Aldus PageMaker including versions of Lorem Ipsum.
+              You agree that all materials, products, and services provided on this app are the property of Walled, its affiliates, 
+              directors, officers, employees, agents, suppliers, or licensors, including all copyrights, trademaDecrks, trade secrets, 
+              patents, and other intellectual property. You also agree that you will not reproduce or redistribute Walled’s intellectual 
+              property in any way, including electronic, digital, or new trademark registrations.
+              </Text>
+              <Text className="text-black text-justify mb-4">
+              Any unauthorized use of the materials or content appearing on the app may violate copyright, trademark, and other applicable 
+              laws and could result in criminal or civil penalties.
               </Text>
             </ScrollView>
           </View>

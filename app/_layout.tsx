@@ -13,7 +13,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const pathname = usePathname(); // ⬅️ Ini penting
+  const pathname = usePathname(); 
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -36,7 +36,7 @@ export default function RootLayout() {
   return (
     <UserProvider>
       <ThemeProvider value={{ isDarkMode, toggleTheme: () => setIsDarkMode(prev => !prev) }}>
-        {!shouldHideNavbar && <Navbar />} {/* ⬅️ Ini bikin Navbar muncul di semua halaman kecuali yang dikecualikan */}
+        {!shouldHideNavbar && <Navbar />}
         
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

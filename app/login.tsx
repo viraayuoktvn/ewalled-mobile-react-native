@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { loginUserAndSetupWallet, UserResponse, WalletResponse } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserContext } from "@/contexts/UserContext";
+import { Feather } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
@@ -13,6 +14,7 @@ const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -78,13 +80,23 @@ const LoginScreen: React.FC = () => {
         />
       </View>
       <View className="w-full max-w-md mb-6">
-        <TextInput
-          placeholder="Password"
-          className="w-full p-4 rounded-lg bg-gray-100"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View className="flex-row items-center bg-gray-100 rounded-lg">
+          <TextInput
+            placeholder="Password"
+            className="flex-1 p-4"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Feather
+              name={showPassword ? "eye-off" : "eye"}
+              className="px-5"
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TouchableOpacity
