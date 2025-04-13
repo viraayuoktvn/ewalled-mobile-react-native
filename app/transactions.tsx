@@ -52,13 +52,11 @@ const Transactions = () => {
         const { data: walletsResponse } = await getWalletByUserId(userRes.data.id, token);
         console.log("3. Wallets:", walletsResponse);
 
-        // Pastikan walletsResponse.data adalah array yang berisi wallet
         if (!walletsResponse || !Array.isArray(walletsResponse.data) || walletsResponse.data.length === 0) {
           console.log("4. No wallets found");
           return;
         }
 
-        // Temukan wallet berdasarkan userId
         const wallet = walletsResponse.data.find((w: WalletResponse) => w.userId === userRes.data.id);
 
         if (!wallet) {
@@ -136,9 +134,10 @@ const Transactions = () => {
     const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
 
     return (
-      <View
+      <TouchableOpacity
         key={index}
         className={`rounded-2xl p-8 py-3 mb-2 shadow-sm ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
+        onPress={() => router.push(`/proof?transactionId=${item.id}`)}  // Navigasi ke halaman Proof dengan ID transaksi
       >
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
@@ -153,7 +152,7 @@ const Transactions = () => {
           </View>
           <Text className={`text-right font-semibold ${amountColor}`}>{amount}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -246,9 +245,7 @@ const Transactions = () => {
               <TouchableOpacity
                 onPress={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-2 mx-0.5 border rounded-l-md ${
-                  currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"
-                }`}
+                className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
               >
                 <Text className={`text-sm font-semibold ${currentPage === 1 ? "text-gray-500" : "text-[#0061FF]"}`}>First</Text>
               </TouchableOpacity>
@@ -260,9 +257,7 @@ const Transactions = () => {
                   <TouchableOpacity
                     key={page}
                     onPress={() => setCurrentPage(page)}
-                    className={`px-3 py-2 border ${
-                      page === currentPage ? "bg-[#0061FF] border-[#0061FF]" : "border-[#0061FF] bg-[#E9E9E9]"
-                    }`}
+                    className={`px-3 py-2 border ${page === currentPage ? "bg-[#0061FF] border-[#0061FF]" : "border-[#0061FF] bg-[#E9E9E9]"}`}
                   >
                     <Text className={`font-semibold ${page === currentPage ? "text-white" : "text-[#0061FF]"}`}>{page}</Text>
                   </TouchableOpacity>
@@ -272,9 +267,7 @@ const Transactions = () => {
               <TouchableOpacity
                 onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-2 mx-0.5 border rounded-r-md ${
-                  currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"
-                }`}
+                className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
               >
                 <Text className={`text-sm font-semibold ${currentPage === totalPages ? "text-gray-500" : "text-[#0061FF]"}`}>Next</Text>
               </TouchableOpacity>

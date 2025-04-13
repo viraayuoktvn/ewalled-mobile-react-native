@@ -251,10 +251,7 @@ const TransferScreen: React.FC = () => {
           <Text className="text-[#0061FF] text-sm">
             {isFetchingWallet
               ? "Loading..."
-              : `IDR ${myWallet.balance.toLocaleString("id-ID", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
+              : `IDR ${myWallet.balance.toLocaleString("id-ID")}`}
           </Text>
         </View>
 

@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   SafeAreaView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";  // Menggunakan useRoute untuk mengambil parameter
 import { useTheme } from "@/contexts/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, {
@@ -17,8 +17,8 @@ import api, {
   TransactionResponse,
   downloadTransactionProof,
 } from "@/services/api";
-import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import moment from "moment-timezone";
 
 const TransactionSuccess: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -28,8 +28,11 @@ const TransactionSuccess: React.FC = () => {
 
   const [userData, setUserData] = useState<UserResponse | null>(null);
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
-  const [latestTransaction, setLatestTransaction] = useState<TransactionResponse | null>(null);
+  const [transaction, setTransaction] = useState<TransactionResponse | null>(null); // Mengganti state menjadi transaction
   const [isLoading, setIsLoading] = useState(true);
+
+  const route = useRoute();
+  const { transactionId } = route.params as { transactionId: string }; // Mengambil ID transaksi dari params route
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +40,7 @@ const TransactionSuccess: React.FC = () => {
       if (!token) return;
 
       try {
+        // Mengambil data pengguna
         const userRes = await api.get("/api/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -48,31 +52,17 @@ const TransactionSuccess: React.FC = () => {
         });
 
         const wallets = Array.isArray(walletRes.data.data) ? walletRes.data.data : [];
-        console.log("wallets: ", wallets)
         const userWallet = wallets.find((w: WalletResponse) => w.user.id === user.id);
-        console.log("userWallet: ", userWallet)
         setWalletData(userWallet);
 
         if (userWallet) {
-          console.log("🔑 Wallet ID:", userWallet.id);
-
-          const txRes = await api.get("/api/transactions/filter", {
+          // Ambil transaksi berdasarkan ID yang diteruskan dari halaman sebelumnya
+          const txRes = await api.get(`/api/transactions/${transactionId}`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { walletId: userWallet.id },
           });
 
-          const transactions: TransactionResponse[] = Array.isArray(txRes.data.data.content)
-            ? txRes.data.data.content
-            : [];
-
-          console.log("📦 Total transaksi ditemukan:", transactions.length);
-
-          if (transactions.length > 0) {
-            const sorted = transactions.sort((a, b) => b.id - a.id);
-            setLatestTransaction(sorted[0]);
-          } else {
-            console.warn("⚠️ Tidak ada transaksi ditemukan.");
-          }
+          const transactionData: TransactionResponse = txRes.data.data;
+          setTransaction(transactionData);
         }
       } catch (error) {
         console.error("❌ Error fetching data", error);
@@ -82,23 +72,23 @@ const TransactionSuccess: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [transactionId]);  // Menggunakan transactionId sebagai dependensi effect
 
   const handleDownload = async () => {
-    if (!latestTransaction) {
-      console.warn("⚠️ No latestTransaction available");
+    if (!transaction) {
+      console.warn("⚠️ No transaction available");
       return;
     }
 
     const token = await AsyncStorage.getItem("authToken");
     if (!token) {
-      alert("Token tidak ditemukan. Silakan login kembali.");
+      alert("Token not found. Please log in again.");
       return;
     }
 
     try {
-      await downloadTransactionProof(latestTransaction.id, token);
-      alert("Download berhasil!");
+      await downloadTransactionProof(transaction.id, token);
+      alert("Download successful!");
     } catch (err: any) {
       console.error("❌ Error during download:", err);
       alert("Download failed. Please try again later.");
@@ -106,14 +96,7 @@ const TransactionSuccess: React.FC = () => {
   };
 
   const formattedDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return moment(dateStr).tz("Asia/Jakarta").format("ddd, D MMM YYYY HH:mm");
   };
 
   if (isLoading) {
@@ -124,17 +107,17 @@ const TransactionSuccess: React.FC = () => {
     );
   }
 
-  if (!latestTransaction) {
+  if (!transaction) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white px-4">
         <Text className="text-lg text-center text-gray-700 font-semibold">
-          No transactions found for your wallet yet.
+          No transaction found.
         </Text>
         <TouchableOpacity
-          onPress={() => router.replace("/")}
+          onPress={() => navigation.goBack()}
           className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
         >
-          <Text className="text-white font-bold">Back to Home</Text>
+          <Text className="text-white font-bold">Back to Previous Page</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -166,7 +149,7 @@ const TransactionSuccess: React.FC = () => {
               isDarkMode ? "text-white" : "text-black"
             }`}
           >
-            Your transaction is success!
+            Your transaction is successful!
           </Text>
 
           <Text
@@ -174,7 +157,7 @@ const TransactionSuccess: React.FC = () => {
               isDarkMode ? "text-gray-400" : "text-gray-500"
             }`}
           >
-            {formattedDate(latestTransaction.transactionDate)}
+            {formattedDate(transaction.transactionDate)}
           </Text>
 
           <View
@@ -184,29 +167,29 @@ const TransactionSuccess: React.FC = () => {
           >
             <Row
               label="Amount"
-              value={`Rp ${latestTransaction.amount.toLocaleString('id-ID')}`}
+              value={`Rp ${transaction.amount.toLocaleString("id-ID")}`}
               dark={isDarkMode}
             />
 
-            {latestTransaction.transactionType === "TOP_UP" ? (
+            {transaction.transactionType === "TOP_UP" ? (
               <Row
                 label="From"
-                value={latestTransaction.option || latestTransaction.description || "-"}
+                value={transaction.option || transaction.description || "-"}
                 dark={isDarkMode}
               />
             ) : (
               <>
                 <Row
                   label="Recipient"
-                  value={latestTransaction.receiverFullname || "-"}
-                  sub={latestTransaction.receiverAccountNumber}
+                  value={transaction.receiverFullname || "-"}
+                  sub={transaction.receiverAccountNumber}
                   dark={isDarkMode}
                 />
                 {showDetail && (
                   <Row
                     label="Sender"
-                    value={latestTransaction.senderFullname || userData?.fullname || "-"}
-                    sub={latestTransaction.senderAccountNumber || walletData?.accountNumber}
+                    value={transaction.senderFullname || userData?.fullname || "-"}
+                    sub={transaction.senderAccountNumber || walletData?.accountNumber}
                     dark={isDarkMode}
                   />
                 )}
@@ -215,12 +198,12 @@ const TransactionSuccess: React.FC = () => {
 
             {showDetail && (
               <>
-                <Row label="Transaction Id" value={`${latestTransaction.id}`} dark={isDarkMode} />
-                <Row label="Notes" value={latestTransaction.description || "-"} dark={isDarkMode} />
-                <Row label="Admin Fee" value="Rp0" dark={isDarkMode} />
+                <Row label="Transaction Id" value={`${transaction.id}`} dark={isDarkMode} />
+                <Row label="Notes" value={transaction.description || "-"} dark={isDarkMode} />
+                <Row label="Admin Fee" value="Rp 0" dark={isDarkMode} />
                 <Row
                   label="Total"
-                  value={`Rp ${latestTransaction.amount.toLocaleString('id-ID')}`}
+                  value={`Rp ${transaction.amount.toLocaleString("id-ID")}`}
                   dark={isDarkMode}
                 />
               </>
@@ -233,7 +216,7 @@ const TransactionSuccess: React.FC = () => {
               }`}
             >
               <Text className="font-bold text-blue-600">
-                {showDetail ? "Hide Detail" : "Detail Transaction"}
+                {showDetail ? "Hide Detail" : "Show Detail"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -248,14 +231,16 @@ const TransactionSuccess: React.FC = () => {
               style={{
                 padding: 12,
                 borderRadius: 50,
-                backgroundColor: isDarkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 97, 255, 0.1)",
+                backgroundColor: isDarkMode
+                  ? "rgba(255, 255, 255, 0.2)"
+                  : "rgba(0, 97, 255, 0.1)",
               }}
             >
               <Feather name="download" size={20} color={isDarkMode ? "white" : "black"} />
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.replace("/")}
+              onPress={() => navigation.goBack()}
               className="bg-blue-600 px-6 py-3 rounded-xl min-w-[120px] items-center mt-4"
             >
               <Text className="text-white font-bold">Done</Text>
