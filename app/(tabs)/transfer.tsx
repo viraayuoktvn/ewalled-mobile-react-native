@@ -85,51 +85,59 @@ const TransferScreen: React.FC = () => {
 
   const handleTransfer = async () => {
     const numericAmount = Number(amount.replace(/\D/g, ""));
-
+  
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid Amount", "Please enter a valid amount to transfer.");
       return;
     }
-
+  
     if (!selectedWallet) {
       Alert.alert("No Recipient", "Please select a wallet to send to.");
       return;
     }
-
+  
     if (selectedWallet.id === myWallet?.id) {
       Alert.alert("Invalid Transfer", "You cannot transfer to your own wallet.");
       return;
     }
-
+  
     if (numericAmount > myWallet!.balance) {
       Alert.alert("Insufficient Balance", "You don't have enough balance to transfer.");
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
-      await transfer({
+      const response = await transfer({
         walletId: myWallet!.id,
         transactionType: "TRANSFER",
         amount: String(numericAmount),
         recipientAccountNumber: selectedWallet.accountNumber,
         description: notes,
       });
-
+  
+      // Dapatkan ID transaksi dari respons
+      const transactionId = response.id;
+      console.log("transactionId: ", transactionId)
+  
       setAmount("");
       setNotes("");
       setSelectedWallet(null);
-
+  
       await refreshWalletData();
-      router.replace("/proof");
-
+  
+      router.replace({
+        pathname: "/proof",
+        params: { transactionId },
+      });
+      
     } catch (error: any) {
       Alert.alert("🚨 Transfer Failed", error.message || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   if (!myWallet) {
     return (

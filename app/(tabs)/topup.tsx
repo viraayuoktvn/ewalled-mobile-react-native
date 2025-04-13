@@ -23,14 +23,15 @@ const TopUpScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<string>("BYOND Pay");
   const [amount, setAmount] = useState<string>(""); // formatted display
   const [rawAmount, setRawAmount] = useState<string>(""); // numeric only
-  const [notes, setNotes] = useState<string>("");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const { wallet: myWallet } = useUserContext();
+  const [notes, setNotes] = useState<string>(""); // untuk notes
+  const [errorMessage, setErrorMessage] = useState<string>(""); // error message
+  const { wallet: myWallet } = useUserContext(); // wallet dari konteks user
   const [isLoading, setIsLoading] = useState(false);
 
   const isLargeScreen = width > 768;
   const router = useRouter();
 
+  // Reset state ketika screen fokus
   useFocusEffect(
     useCallback(() => {
       setAmount("");
@@ -64,18 +65,19 @@ const TopUpScreen: React.FC = () => {
     }
   };
 
+  // Fungsi untuk handle transaksi TopUp
   const handleTopUp = async () => {
     if (rawAmount === "" || errorMessage) return;
-
+  
     setIsLoading(true);
     try {
       const walletId = myWallet?.id;
-
+  
       if (!walletId) {
         alert("Wallet not found. Please re-login.");
         return;
       }
-
+  
       const payload: TopUpPayload = {
         walletId,
         transactionType: "TOP_UP",
@@ -83,17 +85,23 @@ const TopUpScreen: React.FC = () => {
         option: selectedMethod,
         description: notes,
       };
-
-      await topUpWallet(payload);
-      await getWalletById(walletId);
-      router.replace("/proof");
+  
+      const transaction = await topUpWallet(payload);
+      
+      // Mengambil ID transaksi dari response
+      const transactionId = transaction.id;
+  
+      // Navigasi ke halaman Proof dengan ID transaksi
+      router.push(`/proof?transactionId=${transactionId}`);
+  
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message;
+      const msg = err?.response?.data?.message || err.message || "Unknown error";
       setErrorMessage(msg);
+      console.error("Error:", msg);
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   return (
     <KeyboardAvoidingView

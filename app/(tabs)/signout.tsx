@@ -8,12 +8,11 @@ const SignOut: React.FC = () => {
   useEffect(() => {
     const signOut = async () => {
       await logoutUser(); 
-      router.replace("/login");
+      router.replace("/login"); 
     };
 
-    signOut(); 
-
-  }, [router]); 
+    signOut();
+  }, [router]);
 
   return null;
 };

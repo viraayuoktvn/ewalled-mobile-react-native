@@ -305,51 +305,49 @@ const SummaryPage = () => {
             </View>
           ) : (
             <VictoryChart
-              width={chartWidth}
-              height={400}
-              theme={VictoryTheme.material}
-              domainPadding={{ x: 25 }}
-            >
-              <VictoryAxis
-                tickFormat={(t) => t}
-                style={{
-                  axis: { stroke: colors.secondary },
-                  tickLabels: { fill: colors.secondary },
-                }}
-              />
-              <VictoryAxis
-                dependentAxis
-                tickFormat={(t) => t}
-                style={{
-                  axis: { stroke: colors.secondary },
-                  tickLabels: { fill: colors.secondary },
-                }}
-              />
-              <VictoryGroup offset={20} colorScale={["#0061FF", "#D4D4D4"]}>
-                <VictoryBar
-                  data={graphData}
-                  x="label"
-                  y="income"
-                  labels={({ datum }) => `${datum.y}`}
-                  style={{
-                    data: {
-                      fill: "#0061FF",
-                    },
-                  }}
-                />
-                <VictoryBar
-                  data={graphData}
-                  x="label"
-                  y="outcome"
-                  labels={({ datum }) => `${datum.y}`}
-                  style={{
-                    data: {
-                      fill: "#D4D4D4",
-                    },
-                  }}
-                />
-              </VictoryGroup>
-            </VictoryChart>
+             width={chartWidth}
+             height={400}
+             theme={VictoryTheme.material}
+             domainPadding={{ x: 40 }}
+             padding={{ top: 20, bottom: 50, left: 20, right: 20 }}
+             domain={{
+               y: [0, Math.max(summary.totalIncome, summary.totalOutcome) * 1.2 || 1000000],
+             }}
+           >
+             <VictoryAxis
+               tickValues={graphData.map((d) => d.label)}
+               style={{
+                 axis: { stroke: "transparent" },
+                 ticks: { stroke: "transparent" },
+                 grid: { stroke: "transparent" },
+                 tickLabels: { fill: colors.text, fontSize: 13 },
+               }}
+             />
+             <VictoryAxis
+               dependentAxis
+               tickFormat={() => ""}
+               style={{
+                 axis: { stroke: "transparent" },
+                 ticks: { stroke: "transparent" },
+                 grid: { stroke: "transparent" },
+                 tickLabels: { fill: "transparent" },
+               }}
+             />
+             <VictoryGroup offset={30} style={{ data: { width: 50 } }}>
+               <VictoryBar
+                 data={graphData.map((d) => ({ x: d.label, y: d.income }))}
+                 style={{ data: { fill: colors.income } }}
+                 labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
+                 labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
+               />
+               <VictoryBar
+                 data={graphData.map((d) => ({ x: d.label, y: d.outcome }))}
+                 style={{ data: { fill: colors.outcome } }}
+                 labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
+                 labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
+               />
+             </VictoryGroup>
+           </VictoryChart>
           )}
         </ScrollView>
       </View>

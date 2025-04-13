@@ -19,6 +19,7 @@ import api, {
 } from "@/services/api";
 import { Feather } from "@expo/vector-icons";
 import moment from "moment-timezone";
+import { router } from "expo-router";
 
 const TransactionSuccess: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -79,24 +80,30 @@ const TransactionSuccess: React.FC = () => {
       console.warn("⚠️ No transaction available");
       return;
     }
-
+  
     const token = await AsyncStorage.getItem("authToken");
     if (!token) {
       alert("Token not found. Please log in again.");
       return;
     }
-
+  
     try {
       await downloadTransactionProof(transaction.id, token);
       alert("Download successful!");
-    } catch (err: any) {
-      console.error("❌ Error during download:", err);
-      alert("Download failed. Please try again later.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("❌ Error during download:", err);
+        alert(`Download failed: ${err.message}`);
+      } else {
+        // Handle if the error is not an instance of Error
+        console.error("❌ Unknown error during download", err);
+        alert("Download failed: Unknown error");
+      }
     }
-  };
+  };  
 
   const formattedDate = (dateStr: string) => {
-    return moment(dateStr).tz("Asia/Jakarta").format("ddd, D MMM YYYY HH:mm");
+    return moment(dateStr).tz('Asia/Jakarta').format('HH:mm - D MMMM YYYY');
   };
 
   if (isLoading) {
@@ -114,7 +121,7 @@ const TransactionSuccess: React.FC = () => {
           No transaction found.
         </Text>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => router.push("/")}
           className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
         >
           <Text className="text-white font-bold">Back to Previous Page</Text>

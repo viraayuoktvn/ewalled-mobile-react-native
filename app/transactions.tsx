@@ -41,30 +41,27 @@ const Transactions = () => {
       const { data: userRes } = await api.get("/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("2. User:", userRes);
 
       const { data: wallets } = await api.get(`/api/wallets/user/${userRes.data.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("3. Wallets:", wallets);
 
       try {
         const { data: walletsResponse } = await getWalletByUserId(userRes.data.id, token);
-        console.log("3. Wallets:", walletsResponse);
 
         if (!walletsResponse || !Array.isArray(walletsResponse.data) || walletsResponse.data.length === 0) {
-          console.log("4. No wallets found");
+          console.log("No wallets found");
           return;
         }
 
         const wallet = walletsResponse.data.find((w: WalletResponse) => w.userId === userRes.data.id);
 
         if (!wallet) {
-          console.log("5. Wallet not found");
+          console.log("Wallet not found");
           return;
         }
 
-        console.log("5. Found Wallet:", wallet);
+        console.log("Found Wallet:", wallet);
   
         const walletId = String(wallet.id); 
         setWalletId(walletId);
@@ -73,7 +70,6 @@ const Transactions = () => {
           headers: { Authorization: `Bearer ${token}` },
           params: { walletId: wallet.id, page: 0, size: 100 },
         });
-        console.log("5. TX:", tx);
   
         setTransactions(tx.data.content || []);
         setLoading(false);

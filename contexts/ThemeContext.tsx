@@ -1,54 +1,33 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-interface ThemeContextType {
+// Define the type for the context
+interface ThemeContextProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
 }
 
-// Buat context untuk theme
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// Create the context with a default value of undefined
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+// Define the ThemeProvider component that will pass the context
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-interface ThemeProviderProps {
-  children: ReactNode;
-}
-
-// ThemeProvider dengan penyimpanan preferensi tema di AsyncStorage
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-
-  // Load tema dari AsyncStorage saat pertama kali aplikasi dimuat
-  useEffect(() => {
-    const loadTheme = async () => {
-      const storedTheme = await AsyncStorage.getItem('theme');
-      if (storedTheme === 'dark') {
-        setIsDarkMode(true);
-      } else {
-        setIsDarkMode(false);
-      }
-    };
-
-    loadTheme();
-  }, []);
-
-  // Toggle antara light dan dark mode
-  const toggleTheme = async () => {
-    const newTheme = !isDarkMode ? 'dark' : 'light';
-    setIsDarkMode(!isDarkMode);
-    await AsyncStorage.setItem('theme', newTheme); // Simpan preferensi tema
-  };
+  // Toggle the theme between dark and light
+  const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
+};
+
+// Custom hook to use the theme context in other components
+export const useTheme = (): ThemeContextProps => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
 };

@@ -33,9 +33,6 @@ const LoginScreen: React.FC = () => {
 
       const userData = response.userData;
       const walletData = response.walletData;
-      console.log("User Response:", userData);
-      console.log("Wallet Response:", walletData);
-
 
       if (!userData || Object.keys(userData).length === 0) {
         console.error("userData is empty!", userData);

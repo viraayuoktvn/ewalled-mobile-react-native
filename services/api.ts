@@ -173,7 +173,6 @@ export const loginUserAndSetupWallet = async (email: string, password: string) =
   const token = loginResponse.data.data.token;
   await AsyncStorage.setItem("authToken", token);
   setAuthToken(token);
-  console.log("🔑 Token Stored in AsyncStorage:", token);
 
   const userResponse = await api.get<ApiResponse<UserResponse>>(`/api/users/me`);
   const userData = userResponse.data.data;
@@ -204,7 +203,6 @@ export const createWallet = async (userId: number): Promise<WalletResponse> => {
 
 export const getAllWallets = async () => {
   const token = await getAuthToken();
-  console.log("token di getAllWallets:", token);
   if (!token) throw new Error("Token required");
 
   const res = await api.get<ApiResponse<WalletResponse[]>>("/api/wallets", {
@@ -359,6 +357,7 @@ export const downloadTransactionProof = async (transactionId: number, token: str
     );
     const result = await downloadResumable.downloadAsync();
     if (result?.uri) {
+      // Check if sharing is available
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(result.uri);
       } else {

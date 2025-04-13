@@ -42,7 +42,6 @@ const RegisterScreen: React.FC = () => {
   });
 
   const handleRegister = async () => {
-    console.log("Sending data:", { fullname, username, email, password, phoneNumber, avatarUrl });
   
     if (!fullname || !username || !email || !password || !phoneNumber) {
       Alert.alert("Error", "Please fill in all required fields");
@@ -64,9 +63,7 @@ const RegisterScreen: React.FC = () => {
         phoneNumber,
         avatarUrl: avatarUrl || null,
       });
-  
-      console.log("Registration Success:", newUser);
-  
+    
       await AsyncStorage.setItem("userData", JSON.stringify(newUser));
   
       // Redirect ke halaman login
