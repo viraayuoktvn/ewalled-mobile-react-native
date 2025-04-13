@@ -102,11 +102,12 @@ const TransactionSuccess: React.FC = () => {
     }
   };  
 
-  const formattedDate = (dateStr: string) => {
-    const date = moment(dateStr);
-    
-    return date.tz('Asia/Jakarta').format('HH:mm - D MMMM YYYY');
+  const convertToWIB = (date: string) => {
+    return moment(date).tz('Asia/Jakarta').format('DD MMM YYYY - HH:mm');
   };
+  
+  // Pastikan transaction.transactionDate berisi string ISO yang benar
+  const dateInWIB = transaction ? convertToWIB(transaction.transactionDate) : "Tanggal tidak tersedia";    
 
   if (isLoading) {
     return (
@@ -166,7 +167,7 @@ const TransactionSuccess: React.FC = () => {
               isDarkMode ? "text-gray-400" : "text-gray-500"
             }`}
           >
-            {formattedDate(transaction.transactionDate)}
+            {dateInWIB}
           </Text>
 
           <View
