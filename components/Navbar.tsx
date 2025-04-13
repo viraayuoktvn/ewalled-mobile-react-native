@@ -34,7 +34,6 @@ export default function Navbar() {
             resizeMode="contain"
           />
         </TouchableOpacity>
-        {/* Kalau mau ada teks di sebelah logo bisa taruh di sini */}
       </View>
 
       <TouchableOpacity onPress={toggleTheme} style={{ marginTop: 20 }}>

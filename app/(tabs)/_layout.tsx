@@ -8,8 +8,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
-import { isTokenExpired } from "@/components/CheckAuth";
-import api from "@/services/api";
+import { checkAuth } from "@/components/CheckAuth";  // Import checkAuth function
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,35 +22,18 @@ export default function TabLayout() {
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem("authToken");
+    const verifyAuth = async () => {
+      const isAuthenticated = await checkAuth(router);  // Ensure you call the checkAuth function here
 
-      if (!token || isTokenExpired(token)) {
-        console.log("❌ No token or token expired (local)");
-        await AsyncStorage.removeItem("authToken");
-        router.replace("/login");
+      if (!isAuthenticated) {
+        setLoading(false);  // Stop loading if the user is redirected
         return;
       }
 
-      try {
-        await api.get("/api/users/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log("✅ Token valid di server");
-      }  catch (error) {
-        if (error instanceof Error) {
-          console.log("❌ Token ditolak server:", error.message);
-        } else {
-          console.log("❌ Token ditolak server: Unknown error", error);
-        }
-      }
-
-      setLoading(false);
+      setLoading(false);  // If the user is authenticated, stop loading
     };
 
-    checkAuth();
+    verifyAuth();  // Call the function to verify the authentication
   }, []);
 
   useEffect(() => {

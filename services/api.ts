@@ -320,7 +320,7 @@ export const getTransactionsByWalletId = async (
   return response.data.data;
 };
 
-// 🔍 Get Wallet Summary
+// Get Wallet Summary
 export const getWalletSummary = async (walletId: number): Promise<WalletSummaryDTO> => {
   const token = await getAuthToken();
   setAuthToken(token);
@@ -328,7 +328,7 @@ export const getWalletSummary = async (walletId: number): Promise<WalletSummaryD
   return response.data.data;
 };
 
-// 📊 Get Balance Graph
+// Get Balance Graph
 export const getBalanceGraph = async (params: {
   view: "quartal" | "monthly" | "weekly";
   year: number;
@@ -367,7 +367,6 @@ export const downloadTransactionProof = async (transactionId: number, token: str
     );
     const result = await downloadResumable.downloadAsync();
     if (result?.uri) {
-      // Check if sharing is available
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(result.uri);
       } else {
