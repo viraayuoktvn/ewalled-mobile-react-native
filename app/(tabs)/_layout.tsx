@@ -9,7 +9,6 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
 import { isTokenExpired } from "@/components/CheckAuth";
-import axios from "axios";
 import api from "@/services/api";
 
 SplashScreen.preventAutoHideAsync();
@@ -34,7 +33,6 @@ export default function TabLayout() {
         return;
       }
 
-      // Cek token valid di server
       try {
         await api.get("/api/users/me", {
           headers: {

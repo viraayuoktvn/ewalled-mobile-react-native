@@ -117,7 +117,6 @@ const TransferScreen: React.FC = () => {
         description: notes,
       });
   
-      // Dapatkan ID transaksi dari respons
       const transactionId = response.id;
       console.log("transactionId: ", transactionId)
   
@@ -188,7 +187,7 @@ const TransferScreen: React.FC = () => {
                   setSelectedWallet(selected || null);
                 }}
                 items={wallets.map((wallet) => ({
-                  label: `${wallet.accountNumber} (${wallet.user.fullname})`, // Menampilkan nomor akun dan nama lengkap
+                  label: `${wallet.accountNumber} (${wallet.user.fullname})`,
                   value: String(wallet.id),
                 }))}
                 placeholder={{ label: "Choose wallet...", value: null }}

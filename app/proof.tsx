@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   SafeAreaView,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";  // Menggunakan useRoute untuk mengambil parameter
+import { useNavigation, useRoute } from "@react-navigation/native";  
 import { useTheme } from "@/contexts/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, {
@@ -29,11 +29,11 @@ const TransactionSuccess: React.FC = () => {
 
   const [userData, setUserData] = useState<UserResponse | null>(null);
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
-  const [transaction, setTransaction] = useState<TransactionResponse | null>(null); // Mengganti state menjadi transaction
+  const [transaction, setTransaction] = useState<TransactionResponse | null>(null); 
   const [isLoading, setIsLoading] = useState(true);
 
   const route = useRoute();
-  const { transactionId } = route.params as { transactionId: string }; // Mengambil ID transaksi dari params route
+  const { transactionId } = route.params as { transactionId: string }; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +41,6 @@ const TransactionSuccess: React.FC = () => {
       if (!token) return;
 
       try {
-        // Mengambil data pengguna
         const userRes = await api.get("/api/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -57,7 +56,6 @@ const TransactionSuccess: React.FC = () => {
         setWalletData(userWallet);
 
         if (userWallet) {
-          // Ambil transaksi berdasarkan ID yang diteruskan dari halaman sebelumnya
           const txRes = await api.get(`/api/transactions/${transactionId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -73,7 +71,7 @@ const TransactionSuccess: React.FC = () => {
     };
 
     fetchData();
-  }, [transactionId]);  // Menggunakan transactionId sebagai dependensi effect
+  }, [transactionId]); 
 
   const handleDownload = async () => {
     if (!transaction) {
@@ -95,7 +93,6 @@ const TransactionSuccess: React.FC = () => {
         console.error("❌ Error during download:", err);
         alert(`Download failed: ${err.message}`);
       } else {
-        // Handle if the error is not an instance of Error
         console.error("❌ Unknown error during download", err);
         alert("Download failed: Unknown error");
       }
@@ -106,7 +103,6 @@ const TransactionSuccess: React.FC = () => {
     return moment(date).tz('Asia/Jakarta').format('DD MMM YYYY - HH:mm');
   };
   
-  // Pastikan transaction.transactionDate berisi string ISO yang benar
   const dateInWIB = transaction ? convertToWIB(transaction.transactionDate) : "Tanggal tidak tersedia";    
 
   if (isLoading) {

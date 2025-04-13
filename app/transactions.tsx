@@ -133,7 +133,7 @@ const Transactions = () => {
       <TouchableOpacity
         key={index}
         className={`rounded-2xl p-8 py-3 mb-2 shadow-sm ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
-        onPress={() => router.push(`/proof?transactionId=${item.id}`)}  // Navigasi ke halaman Proof dengan ID transaksi
+        onPress={() => router.push(`/proof?transactionId=${item.id}`)}
       >
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
@@ -236,20 +236,18 @@ const Transactions = () => {
             {paginatedTx.map(renderTransaction)}
 
             {/* Pagination */}
-            <View className="flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1">
-              {/* First */}
-              <TouchableOpacity
-                onPress={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
-              >
-                <Text className={`text-sm font-semibold ${currentPage === 1 ? "text-gray-500" : "text-[#0061FF]"}`}>First</Text>
-              </TouchableOpacity>
+              <View className="flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1">
+                {/* First */}
+                <TouchableOpacity
+                  onPress={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
+                >
+                  <Text className={`text-sm font-semibold ${currentPage === 1 ? "text-gray-500" : "text-[#0061FF]"}`}>First</Text>
+                </TouchableOpacity>
 
-              {/* Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(page => Math.abs(page - currentPage) <= 1)
-                .map(page => (
+                {/* Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <TouchableOpacity
                     key={page}
                     onPress={() => setCurrentPage(page)}
@@ -259,15 +257,15 @@ const Transactions = () => {
                   </TouchableOpacity>
                 ))}
 
-              {/* Next */}
-              <TouchableOpacity
-                onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
-              >
-                <Text className={`text-sm font-semibold ${currentPage === totalPages ? "text-gray-500" : "text-[#0061FF]"}`}>Next</Text>
-              </TouchableOpacity>
-            </View>
+                {/* Next */}
+                <TouchableOpacity
+                  onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
+                >
+                  <Text className={`text-sm font-semibold ${currentPage === totalPages ? "text-gray-500" : "text-[#0061FF]"}`}>Next</Text>
+                </TouchableOpacity>
+              </View>
           </>
         )}
       </ScrollView>
