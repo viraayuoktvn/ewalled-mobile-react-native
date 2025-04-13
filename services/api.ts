@@ -56,7 +56,7 @@ export interface LoginResponse {
 // Define wallet response type
 export interface WalletResponse {
   id: number;
-  user: { id: number };
+  user: { id: number, fullname: string };
   userId: number;
   accountNumber: string;
   balance: number;

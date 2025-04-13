@@ -188,7 +188,7 @@ const TransferScreen: React.FC = () => {
                   setSelectedWallet(selected || null);
                 }}
                 items={wallets.map((wallet) => ({
-                  label: wallet.accountNumber,
+                  label: `${wallet.accountNumber} (${wallet.user.fullname})`, // Menampilkan nomor akun dan nama lengkap
                   value: String(wallet.id),
                 }))}
                 placeholder={{ label: "Choose wallet...", value: null }}

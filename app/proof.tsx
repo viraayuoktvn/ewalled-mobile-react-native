@@ -103,7 +103,9 @@ const TransactionSuccess: React.FC = () => {
   };  
 
   const formattedDate = (dateStr: string) => {
-    return moment(dateStr).tz('Asia/Jakarta').format('HH:mm - D MMMM YYYY');
+    const date = moment(dateStr);
+    
+    return date.tz('Asia/Jakarta').format('HH:mm - D MMMM YYYY');
   };
 
   if (isLoading) {
