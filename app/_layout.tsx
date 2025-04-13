@@ -34,12 +34,12 @@ export default function RootLayout() {
     const checkAuthToken = async () => {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
-        router.replace('/login'); // If no token, redirect to login page
+        router.replace('/login');
       }
     };
-    checkAuthToken(); // Check if token exists
+    checkAuthToken();
 
-  }, [router]); // Run this effect on route change
+  }, [router]);
 
   if (!loaded) return null;
 
