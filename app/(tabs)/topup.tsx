@@ -21,7 +21,8 @@ const { width } = Dimensions.get("window");
 const TopUpScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [selectedMethod, setSelectedMethod] = useState<string>("BYOND Pay");
-  const [amount, setAmount] = useState<string>("");
+  const [amount, setAmount] = useState<string>(""); // formatted display
+  const [rawAmount, setRawAmount] = useState<string>(""); // numeric only
   const [notes, setNotes] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { wallet: myWallet } = useUserContext();
@@ -33,6 +34,7 @@ const TopUpScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       setAmount("");
+      setRawAmount("");
       setNotes("");
       setSelectedMethod("BYOND Pay");
       setErrorMessage("");
@@ -40,21 +42,30 @@ const TopUpScreen: React.FC = () => {
   );
 
   const handleAmountChange = (text: string) => {
-    setAmount(text);
-    setErrorMessage(""); 
+    const cleaned = text.replace(/\D/g, ""); // hanya angka
+    setRawAmount(cleaned);
 
-    // Convert text input to number to validate
-    const amountValue = parseFloat(text);
+    if (cleaned === "") {
+      setAmount("");
+      setErrorMessage("");
+      return;
+    }
 
-    if (amountValue < 10000) {
-      setErrorMessage("Minimum transaction is IDR 10,000");
-    } else if (amountValue > 2000000) {
-      setErrorMessage("Maximum transaction is IDR 2,000,000");
+    const numericValue = parseInt(cleaned, 10);
+    const formatted = numericValue.toLocaleString("id-ID");
+    setAmount(formatted);
+
+    if (numericValue < 10000) {
+      setErrorMessage("Minimum transaction is IDR 10.000");
+    } else if (numericValue > 2000000) {
+      setErrorMessage("Maximum transaction is IDR 2.000.000");
+    } else {
+      setErrorMessage("");
     }
   };
 
   const handleTopUp = async () => {
-    if (amount === "" || errorMessage) return; 
+    if (rawAmount === "" || errorMessage) return;
 
     setIsLoading(true);
     try {
@@ -68,14 +79,14 @@ const TopUpScreen: React.FC = () => {
       const payload: TopUpPayload = {
         walletId,
         transactionType: "TOP_UP",
-        amount,
+        amount: rawAmount,
         option: selectedMethod,
         description: notes,
       };
 
       await topUpWallet(payload);
       await getWalletById(walletId);
-      router.push("/proof");
+      router.replace("/proof");
     } catch (err: any) {
       const msg = err?.response?.data?.message || err.message;
       setErrorMessage(msg);
@@ -123,6 +134,7 @@ const TopUpScreen: React.FC = () => {
                 className="flex-1 ml-2 w-full"
                 keyboardType="numeric"
                 placeholder="0"
+                placeholderTextColor={isDarkMode ? "white" : "black"}
                 value={amount}
                 onChangeText={handleAmountChange}
                 style={{
@@ -132,7 +144,6 @@ const TopUpScreen: React.FC = () => {
               />
             </View>
 
-            {/* Display Error Message if Amount is Invalid */}
             {errorMessage ? (
               <Text className="text-red-500 mb-4" style={{ fontSize: 14 }}>
                 {errorMessage}
@@ -145,10 +156,11 @@ const TopUpScreen: React.FC = () => {
               Payment Method
             </Text>
             <View
-              className="rounded-lg mb-6 p-2"
+              className="rounded-lg mb-6"
               style={{
                 backgroundColor: isDarkMode ? "#444444" : "#f5f5f5",
-                borderRadius: 8,
+                borderRadius: 12,
+                overflow: "hidden",
               }}
             >
               <Picker
@@ -181,10 +193,9 @@ const TopUpScreen: React.FC = () => {
             />
           </View>
 
-          {/* Top Up Button */}
           <TouchableOpacity
             className={`p-4 rounded-lg w-full max-w-md ${
-              amount === "" || isLoading ? "bg-gray-400" : "bg-[#0061FF]"
+              rawAmount === "" || isLoading ? "bg-gray-400" : "bg-[#0061FF]"
             }`}
             style={{
               width: isLargeScreen ? "50%" : "100%",
@@ -192,7 +203,7 @@ const TopUpScreen: React.FC = () => {
               marginTop: 20,
             }}
             onPress={handleTopUp}
-            disabled={amount === "" || isLoading}
+            disabled={rawAmount === "" || isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />

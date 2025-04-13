@@ -1,11 +1,18 @@
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
+import { logoutUser } from "@/services/api";
 
 const SignOut: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/login");
+    const signOut = async () => {
+      await logoutUser(); 
+      router.replace("/login");
+    };
+
+    signOut(); 
+
   }, [router]); 
 
   return null;

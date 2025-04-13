@@ -20,6 +20,13 @@ import { useRouter, useFocusEffect } from "expo-router";
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
 
+// Format angka ke string IDR currency
+const formatCurrency = (value: string) => {
+  const cleaned = value.replace(/\D/g, "");
+  const formatted = new Intl.NumberFormat("id-ID").format(Number(cleaned));
+  return formatted;
+};
+
 const TransferScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
   const { wallet: myWallet, setWallet } = useUserContext();
@@ -42,7 +49,6 @@ const TransferScreen: React.FC = () => {
 
       const updatedMyWallet = allWallets.find((w: WalletResponse) => w.id === myWallet?.id);
       if (updatedMyWallet) {
-        console.log("Wallet balance type:", typeof updatedMyWallet.balance, updatedMyWallet.balance);
         setWallet(updatedMyWallet);
       }
     } catch (err) {
@@ -64,22 +70,21 @@ const TransferScreen: React.FC = () => {
   );
 
   const handleAmountChange = (text: string) => {
-    setAmount(text);
-    setErrorMessage(""); 
+    const numericOnly = text.replace(/\D/g, "");
+    const formatted = formatCurrency(numericOnly);
+    setAmount(formatted);
+    setErrorMessage("");
 
-    // Convert text input to number to validate
-    const amountValue = parseFloat(text);
-
+    const amountValue = parseInt(numericOnly);
     if (amountValue < 10000) {
-      setErrorMessage("Minimum transaction is IDR 10,000");
+      setErrorMessage("Minimum transaction is IDR 10.000");
     } else if (amountValue > 2000000) {
-      setErrorMessage("Maximum transaction is IDR 2,000,000");
+      setErrorMessage("Maximum transaction is IDR 2.000.000");
     }
   };
 
   const handleTransfer = async () => {
-    if (amount === "" || errorMessage) return; 
-    const numericAmount = Number(amount);
+    const numericAmount = Number(amount.replace(/\D/g, ""));
 
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid Amount", "Please enter a valid amount to transfer.");
@@ -112,7 +117,6 @@ const TransferScreen: React.FC = () => {
         description: notes,
       });
 
-      Alert.alert("✅ Success", "Transfer completed successfully!");
       setAmount("");
       setNotes("");
       setSelectedWallet(null);
@@ -203,9 +207,7 @@ const TransferScreen: React.FC = () => {
             </View>
           )}
           {!selectedWallet && wallets.length > 0 && (
-            <Text
-              className="text-sm mt-1 text-red-500"
-            >
+            <Text className="text-sm mt-1 text-red-500">
               Please select a recipient wallet
             </Text>
           )}
@@ -226,6 +228,7 @@ const TransferScreen: React.FC = () => {
             className="flex-1 w-full"
             keyboardType="numeric"
             placeholder="0"
+            placeholderTextColor={isDarkMode ? "white" : "black"}
             value={amount}
             onChangeText={handleAmountChange}
             style={{
@@ -235,7 +238,6 @@ const TransferScreen: React.FC = () => {
           />
         </View>
 
-        {/* Display Error Message if Amount is Invalid */}
         {errorMessage ? (
           <View className="w-full max-w-md flex-row justify-start mb-4">
             <Text className="text-red-500" style={{ fontSize: 14 }}>
@@ -247,7 +249,12 @@ const TransferScreen: React.FC = () => {
         <View className="flex-row justify-between mb-4 w-full max-w-md">
           <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>
           <Text className="text-[#0061FF] text-sm">
-            {isFetchingWallet ? "Loading..." : `IDR ${myWallet.balance.toLocaleString()}`}
+            {isFetchingWallet
+              ? "Loading..."
+              : `IDR ${myWallet.balance.toLocaleString("id-ID", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
           </Text>
         </View>
 
@@ -266,7 +273,7 @@ const TransferScreen: React.FC = () => {
 
         <TouchableOpacity
           className={`p-4 rounded-lg mt-6 w-full max-w-md ${
-            isLoading || !selectedWallet || !amount || isNaN(Number(amount)) || Number(amount) <= 0
+            isLoading || !selectedWallet || !amount || isNaN(Number(amount.replace(/\D/g, ""))) || Number(amount.replace(/\D/g, "")) <= 0
               ? "bg-gray-400"
               : "bg-[#0061FF]"
           }`}
@@ -276,8 +283,8 @@ const TransferScreen: React.FC = () => {
             isLoading ||
             !selectedWallet ||
             !amount ||
-            isNaN(Number(amount)) ||
-            Number(amount) <= 0
+            isNaN(Number(amount.replace(/\D/g, ""))) ||
+            Number(amount.replace(/\D/g, "")) <= 0
           }
         >
           {isLoading ? (

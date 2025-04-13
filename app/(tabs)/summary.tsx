@@ -5,6 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import {
   VictoryBar,
@@ -19,6 +21,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useUserContext } from "@/contexts/UserContext";
 import {
   BalanceGraphResponse,
+  BalanceGraphResult,
   getBalanceGraph,
   getWalletSummary,
 } from "@/services/api";
@@ -49,20 +52,25 @@ const SummaryPage = () => {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [view, setView] = useState<ViewType>("quartal");
   const [graphData, setGraphData] = useState<GraphBarData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);  // Add loading state
 
   const fetchSummary = async () => {
     try {
       if (!wallet) return;
+      setLoading(true);  // Set loading to true when fetching
       const res = await getWalletSummary(wallet.id);
       if (res?.balance !== undefined) setSummary(res);
     } catch (error) {
       console.error("❌ Error getting summary:", error);
+    } finally {
+      setLoading(false);  // Set loading to false after fetching
     }
   };
 
   const fetchGraph = async () => {
     try {
       if (!wallet) return;
+      setLoading(true);  // Set loading to true when fetching
       const payload: any = { walletId: wallet.id, view, year };
 
       if (view === "weekly") {
@@ -70,8 +78,8 @@ const SummaryPage = () => {
         payload.month = currentMonth.toString().padStart(2, "0");
       }
 
-      const res = await getBalanceGraph(payload);
-      const result = res.data;
+      const res: BalanceGraphResult = await getBalanceGraph(payload);
+      const result: BalanceGraphResponse[] = res.data;
 
       if (result) {
         const mapped: GraphBarData[] = result.map((d: BalanceGraphResponse) => {
@@ -82,13 +90,14 @@ const SummaryPage = () => {
         });
         setGraphData(mapped);
 
-        // Kumpulkan daftar tahun dari data
-        const years = result.map((item) => item.year).filter(Boolean);
+        const years = result.map((result) => res.year).filter(Boolean);
         const uniqueYears = Array.from(new Set([year, ...years])).sort((a, b) => b - a);
         setAvailableYears(uniqueYears);
       }
     } catch (error) {
       console.error("❌ Error fetching graph:", error);
+    } finally {
+      setLoading(false);  // Set loading to false after fetching
     }
   };
 
@@ -105,6 +114,8 @@ const SummaryPage = () => {
     income: "#0061FF",
     outcome: "#D4D4D4",
     switcher: isDarkMode ? "#2c2c2c" : "#e5e7eb",
+    iconBg: isDarkMode ? "#2c2c2c" : "#e0e0e0",
+    iconBgIncomeOutcome: isDarkMode ? "#FFFFFF" : "rgba(0, 97, 255, 0.2)",
   };
 
   const chartWidth = graphData.length * 130;
@@ -116,27 +127,96 @@ const SummaryPage = () => {
         Balance Overview
       </Text>
 
+      {/* Total Balance */}
       <View className="p-4 rounded-2xl shadow-md mb-4" style={{ backgroundColor: colors.income }}>
-        <Text className="text-white font-semibold">Total Balance</Text>
+        <View className="flex-row items-center mb-2">
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 30,
+              backgroundColor: "#FFFFFF",
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 8,
+            }}
+          >
+            <Image
+              source={require("@/public/images/balance.png")}
+              style={{
+                width: 20,
+                height: 20,
+              }}
+              resizeMode="contain"
+            />
+          </View>
+          <Text className="text-white text-lg font-semibold">Total Balance</Text>
+        </View>
         <Text className="text-2xl font-bold text-white">
           Rp {summary.balance.toLocaleString("id-ID")}
         </Text>
       </View>
 
+      {/* Income */}
       <View className="p-4 rounded-2xl shadow mb-2" style={{ backgroundColor: colors.card }}>
-        <Text style={{ color: colors.secondary }} className="font-semibold">Income</Text>
+        <View className="flex-row items-center mb-2">
+          <View
+              style={{
+                width: 35,
+                height: 35,
+                borderRadius: 30,
+                backgroundColor: colors.iconBgIncomeOutcome,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 8,
+              }}
+            >
+              <Image
+                source={require("@/public/images/income.png")}
+                style={{
+                  width: 20,
+                  height: 20,
+                }}
+                resizeMode="contain"
+              />
+            </View>
+            <Text className="text-lg font-semibold" style={{ color: colors.text }}>Income</Text>
+        </View>
         <Text style={{ color: colors.text }} className="text-xl font-bold">
           Rp {summary.totalIncome.toLocaleString("id-ID")}
         </Text>
       </View>
 
+      {/* Outcome */}
       <View className="p-4 rounded-2xl shadow mb-4" style={{ backgroundColor: colors.card }}>
-        <Text style={{ color: colors.secondary }} className="font-semibold">Outcome</Text>
+        <View className="flex-row items-center mb-2">
+          <View
+            style={{
+              width: 35,
+              height: 35,
+              borderRadius: 30,
+              backgroundColor: colors.iconBgIncomeOutcome,
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 8,
+            }}>
+            <Image
+              source={require("@/public/images/outcome.png")}
+              style={{
+                width: 20,
+                height: 20,
+              }}
+              resizeMode="contain"
+            />
+          </View>
+          <Text className="text-lg font-semibold" style={{ color: colors.text }}>Outcome</Text>
+        </View>
         <Text style={{ color: colors.text }} className="text-xl font-bold">
           Rp {summary.totalOutcome.toLocaleString("id-ID")}
         </Text>
       </View>
 
+      {/* Graph Switcher */}
       <View className="flex-row items-center justify-between mb-4 px-1 mt-8">
         <Text style={{ color: colors.text }} className="text-xl font-bold">Balance Graph</Text>
         <View className="flex-row gap-2">
@@ -168,15 +248,17 @@ const SummaryPage = () => {
         ))}
       </View>
 
+      {/* Year Picker */}
       <View className="mb-4">
         <Text style={{ color: colors.text }} className="font-semibold mb-2">
           Choose a Year
         </Text>
         <View
-          className="mb-6 p-2"
+          className="mb-6"
           style={{
             backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
             borderRadius: 30,
+            overflow: 'hidden',
           }}
         >
           <Picker
@@ -186,6 +268,7 @@ const SummaryPage = () => {
             style={{
               backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
               color: isDarkMode ? "white" : "black",
+              borderRadius: 30,
             }}
             dropdownIconColor={isDarkMode ? "#2c2c2c" : "#000000"}
             itemStyle={{
@@ -200,6 +283,7 @@ const SummaryPage = () => {
         </View>
       </View>
 
+      {/* Graph */}
       <View className="p-8 rounded-2xl shadow mb-10" style={{ backgroundColor: colors.card }}>
         <ScrollView
           horizontal
@@ -209,50 +293,64 @@ const SummaryPage = () => {
             justifyContent: isScrollable ? "flex-start" : "center",
           }}
         >
-          <VictoryChart
-            width={chartWidth}
-            height={400}
-            theme={VictoryTheme.material}
-            domainPadding={{ x: 40 }}
-            padding={{ top: 20, bottom: 50, left: 20, right: 20 }}
-            domain={{
-              y: [0, Math.max(summary.totalIncome, summary.totalOutcome) * 1.2 || 1000000],
-            }}
-          >
-            <VictoryAxis
-              tickValues={graphData.map((d) => d.label)}
+          {loading ? ( 
+            <View
               style={{
-                axis: { stroke: "transparent" },
-                ticks: { stroke: "transparent" },
-                grid: { stroke: "transparent" },
-                tickLabels: { fill: colors.text, fontSize: 13 },
+                flex: 1,
+                alignItems: "center",    
+                height: 400,              
               }}
-            />
-            <VictoryAxis
-              dependentAxis
-              tickFormat={() => ""}
-              style={{
-                axis: { stroke: "transparent" },
-                ticks: { stroke: "transparent" },
-                grid: { stroke: "transparent" },
-                tickLabels: { fill: "transparent" },
-              }}
-            />
-            <VictoryGroup offset={30} style={{ data: { width: 50 } }}>
-              <VictoryBar
-                data={graphData.map((d) => ({ x: d.label, y: d.income }))}
-                style={{ data: { fill: colors.income } }}
-                labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
-                labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
+            >
+              <ActivityIndicator size="large" color={colors.income} />
+            </View>
+          ) : (
+            <VictoryChart
+              width={chartWidth}
+              height={400}
+              theme={VictoryTheme.material}
+              domainPadding={{ x: 25 }}
+            >
+              <VictoryAxis
+                tickFormat={(t) => t}
+                style={{
+                  axis: { stroke: colors.secondary },
+                  tickLabels: { fill: colors.secondary },
+                }}
               />
-              <VictoryBar
-                data={graphData.map((d) => ({ x: d.label, y: d.outcome }))}
-                style={{ data: { fill: colors.outcome } }}
-                labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
-                labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
+              <VictoryAxis
+                dependentAxis
+                tickFormat={(t) => t}
+                style={{
+                  axis: { stroke: colors.secondary },
+                  tickLabels: { fill: colors.secondary },
+                }}
               />
-            </VictoryGroup>
-          </VictoryChart>
+              <VictoryGroup offset={20} colorScale={["#0061FF", "#D4D4D4"]}>
+                <VictoryBar
+                  data={graphData}
+                  x="label"
+                  y="income"
+                  labels={({ datum }) => `${datum.y}`}
+                  style={{
+                    data: {
+                      fill: "#0061FF",
+                    },
+                  }}
+                />
+                <VictoryBar
+                  data={graphData}
+                  x="label"
+                  y="outcome"
+                  labels={({ datum }) => `${datum.y}`}
+                  style={{
+                    data: {
+                      fill: "#D4D4D4",
+                    },
+                  }}
+                />
+              </VictoryGroup>
+            </VictoryChart>
+          )}
         </ScrollView>
       </View>
     </ScrollView>

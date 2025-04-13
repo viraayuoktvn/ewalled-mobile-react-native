@@ -9,7 +9,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/contexts/ThemeContext";
-import api, { TransactionResponse, WalletResponse } from "@/services/api";
+import api, { getWalletByUserId, TransactionResponse, WalletResponse } from "@/services/api";
 import { router } from "expo-router";
 
 const ITEMS_PER_PAGE = 8;
@@ -33,28 +33,58 @@ const Transactions = () => {
       setLoading(true);
       const token = await AsyncStorage.getItem("authToken");
 
+      if (!token) {
+        console.log("Token is missing!");
+        return; 
+      }
+
       const { data: userRes } = await api.get("/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("2. User:", userRes);
 
       const { data: wallets } = await api.get(`/api/wallets/user/${userRes.data.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("3. Wallets:", wallets);
 
-      const wallet = wallets.find((w: WalletResponse) => w.user.id === userRes.data.id);
-      if (!wallet) return;
+      try {
+        const { data: walletsResponse } = await getWalletByUserId(userRes.data.id, token);
+        console.log("3. Wallets:", walletsResponse);
 
-      setWalletId(wallet.id);
+        // Pastikan walletsResponse.data adalah array yang berisi wallet
+        if (!walletsResponse || !Array.isArray(walletsResponse.data) || walletsResponse.data.length === 0) {
+          console.log("4. No wallets found");
+          return;
+        }
 
-      const { data: tx } = await api.get(`/api/transactions/filter`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { walletId: wallet.id, page: 0, size: 100 },
-      });
+        // Temukan wallet berdasarkan userId
+        const wallet = walletsResponse.data.find((w: WalletResponse) => w.userId === userRes.data.id);
 
-      setTransactions(tx.content || []);
-      setLoading(false);
+        if (!wallet) {
+          console.log("5. Wallet not found");
+          return;
+        }
+
+        console.log("5. Found Wallet:", wallet);
+  
+        const walletId = String(wallet.id); 
+        setWalletId(walletId);
+  
+        const { data: tx } = await api.get(`/api/transactions/filter`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { walletId: wallet.id, page: 0, size: 100 },
+        });
+        console.log("5. TX:", tx);
+  
+        setTransactions(tx.data.content || []);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching wallet:", error);
+        setLoading(false);
+      }
     };
-
+  
     fetchData();
   }, []);
 
@@ -98,8 +128,11 @@ const Transactions = () => {
       month: "long",
       year: "numeric",
     });
-
-    const amount = `${isTopup || isReceiver ? "+" : "-"} ${Number(item.amount).toLocaleString("id-ID")},00`;
+    
+    const amount = `${isTopup || isReceiver ? "+" : "-"} ${parseInt(item.amount as any).toLocaleString("id-ID", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
     const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
 
     return (

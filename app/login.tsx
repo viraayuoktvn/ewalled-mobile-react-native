@@ -24,8 +24,6 @@ const LoginScreen: React.FC = () => {
 
     setLoading(true);
     try {
-
-      // Login & Wallet Setup
       const response = await loginUserAndSetupWallet(email, password);
 
       if (!response) {
@@ -33,30 +31,40 @@ const LoginScreen: React.FC = () => {
         return;
       }
 
-      const userData  = response.userData; 
+      const userData = response.userData;
       const walletData = response.walletData;
+      console.log("User Response:", userData);
+      console.log("Wallet Response:", walletData);
+
 
       if (!userData || Object.keys(userData).length === 0) {
         console.error("userData is empty!", userData);
         throw new Error("User data is missing.");
       }
-      
+
       if (!walletData || Object.keys(walletData).length === 0) {
         console.error("walletData is empty!", walletData);
         throw new Error("Wallet data is missing.");
       }
 
-      // Set User & Wallet in Context
       setUser(userData as UserResponse);
       setWallet(walletData as WalletResponse);
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
       await AsyncStorage.setItem("walletData", JSON.stringify(walletData));
 
-      // Redirect to Home
       router.replace("/(tabs)");
     } catch (error: any) {
       console.error("Login Error:", error);
-      Alert.alert("Error", error.message || "Something went wrong. Please try again.");
+
+      if (
+        error?.response?.status === 401 || 
+        error?.message?.toLowerCase().includes("unauthorized") || 
+        error?.message?.toLowerCase().includes("invalid")
+      ) {
+        Alert.alert("Login Failed", "Incorrect email or password.");
+      } else {
+        Alert.alert("Error", error.message || "Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -69,7 +77,6 @@ const LoginScreen: React.FC = () => {
         className="w-[233px] h-[57px] mb-12"
       />
 
-      {/* TextInput */}
       <View className="w-full max-w-md mb-6 mt-8">
         <TextInput
           placeholder="Email"
@@ -79,6 +86,7 @@ const LoginScreen: React.FC = () => {
           keyboardType="email-address"
         />
       </View>
+
       <View className="w-full max-w-md mb-6">
         <View className="flex-row items-center bg-gray-100 rounded-lg">
           <TextInput

@@ -30,7 +30,7 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
-  const hideNavbarOn = ['/', '/login', '/register'];
+  const hideNavbarOn = ['/', '/login', '/register', '/proof'];
   const shouldHideNavbar = hideNavbarOn.includes(pathname);
 
   return (

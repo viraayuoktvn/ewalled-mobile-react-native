@@ -1,4 +1,3 @@
-// TransactionSuccess.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -19,9 +18,10 @@ import api, {
   downloadTransactionProof,
 } from "@/services/api";
 import { router } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
 const TransactionSuccess: React.FC = () => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
   const [showDetail, setShowDetail] = useState(false);
@@ -29,6 +29,7 @@ const TransactionSuccess: React.FC = () => {
   const [userData, setUserData] = useState<UserResponse | null>(null);
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
   const [latestTransaction, setLatestTransaction] = useState<TransactionResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,25 +47,37 @@ const TransactionSuccess: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const wallets = Array.isArray(walletRes.data) ? walletRes.data : [];
-        const userWallet = wallets.find(
-          (w: WalletResponse) => w.user.id === user.id
-        );
+        const wallets = Array.isArray(walletRes.data.data) ? walletRes.data.data : [];
+        console.log("wallets: ", wallets)
+        const userWallet = wallets.find((w: WalletResponse) => w.user.id === user.id);
+        console.log("userWallet: ", userWallet)
         setWalletData(userWallet);
 
         if (userWallet) {
+          console.log("🔑 Wallet ID:", userWallet.id);
+
           const txRes = await api.get("/api/transactions/filter", {
             headers: { Authorization: `Bearer ${token}` },
             params: { walletId: userWallet.id },
           });
-          const transactions = txRes.data.content || [];
-          const sorted = transactions.sort(
-            (a: TransactionResponse, b: TransactionResponse) => b.id - a.id
-          );
-          setLatestTransaction(sorted[0]);
+
+          const transactions: TransactionResponse[] = Array.isArray(txRes.data.data.content)
+            ? txRes.data.data.content
+            : [];
+
+          console.log("📦 Total transaksi ditemukan:", transactions.length);
+
+          if (transactions.length > 0) {
+            const sorted = transactions.sort((a, b) => b.id - a.id);
+            setLatestTransaction(sorted[0]);
+          } else {
+            console.warn("⚠️ Tidak ada transaksi ditemukan.");
+          }
         }
       } catch (error) {
-        console.error("Error fetching data", error);
+        console.error("❌ Error fetching data", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -103,7 +116,29 @@ const TransactionSuccess: React.FC = () => {
     });
   };
 
-  if (!latestTransaction || !userData) return null;
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center">
+        <Text className="text-lg">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!latestTransaction) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white px-4">
+        <Text className="text-lg text-center text-gray-700 font-semibold">
+          No transactions found for your wallet yet.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.replace("/")}
+          className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
+        >
+          <Text className="text-white font-bold">Back to Home</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className={`${isDarkMode ? "bg-black" : "bg-white"} flex-1`}>
@@ -117,7 +152,7 @@ const TransactionSuccess: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full max-w-[600px]">
+        <View className="w-full max-w-[600px] pt-10">
           <View className="w-full overflow-hidden">
             <Image
               source={require("../public/images/navbar-success.png")}
@@ -125,6 +160,7 @@ const TransactionSuccess: React.FC = () => {
               resizeMode="cover"
             />
           </View>
+
           <Text
             className={`text-xl font-bold text-center mt-4 ${
               isDarkMode ? "text-white" : "text-black"
@@ -132,6 +168,7 @@ const TransactionSuccess: React.FC = () => {
           >
             Your transaction is success!
           </Text>
+
           <Text
             className={`text-center my-2 ${
               isDarkMode ? "text-gray-400" : "text-gray-500"
@@ -147,7 +184,7 @@ const TransactionSuccess: React.FC = () => {
           >
             <Row
               label="Amount"
-              value={`Rp ${latestTransaction.amount.toLocaleString()}`}
+              value={`Rp ${latestTransaction.amount.toLocaleString('id-ID')}`}
               dark={isDarkMode}
             />
 
@@ -168,7 +205,7 @@ const TransactionSuccess: React.FC = () => {
                 {showDetail && (
                   <Row
                     label="Sender"
-                    value={latestTransaction.senderFullname || userData.fullname}
+                    value={latestTransaction.senderFullname || userData?.fullname || "-"}
                     sub={latestTransaction.senderAccountNumber || walletData?.accountNumber}
                     dark={isDarkMode}
                   />
@@ -178,20 +215,12 @@ const TransactionSuccess: React.FC = () => {
 
             {showDetail && (
               <>
-                <Row
-                  label="Transaction Id"
-                  value={`${latestTransaction.id}`}
-                  dark={isDarkMode}
-                />
-                <Row
-                  label="Notes"
-                  value={latestTransaction.description || "-"}
-                  dark={isDarkMode}
-                />
+                <Row label="Transaction Id" value={`${latestTransaction.id}`} dark={isDarkMode} />
+                <Row label="Notes" value={latestTransaction.description || "-"} dark={isDarkMode} />
                 <Row label="Admin Fee" value="Rp0" dark={isDarkMode} />
                 <Row
                   label="Total"
-                  value={`Rp ${latestTransaction.amount.toLocaleString()}`}
+                  value={`Rp ${latestTransaction.amount.toLocaleString('id-ID')}`}
                   dark={isDarkMode}
                 />
               </>
@@ -216,14 +245,13 @@ const TransactionSuccess: React.FC = () => {
           >
             <TouchableOpacity
               onPress={handleDownload}
-              className={`p-3 rounded-full ${
-                isDarkMode ? "bg-gray-700" : "bg-gray-200"
-              }`}
+              style={{
+                padding: 12,
+                borderRadius: 50,
+                backgroundColor: isDarkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 97, 255, 0.1)",
+              }}
             >
-              <Image
-                source={require("../public/images/download.png")}
-                style={{ width: 30, height: 30 }}
-              />
+              <Feather name="download" size={20} color={isDarkMode ? "white" : "black"} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -270,9 +298,7 @@ const Row = ({
       >
         {value}
       </Text>
-      {sub && (
-        <Text className="text-xs mt-1 text-gray-500">{sub}</Text>
-      )}
+      {sub && <Text className="text-xs mt-1 text-gray-500">{sub}</Text>}
     </View>
   </View>
 );

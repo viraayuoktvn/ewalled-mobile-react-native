@@ -17,7 +17,7 @@ const api = axios.create({
  
 // Define a generic API response type
 export interface ApiResponse<T> {
-  success: boolean;
+  status: string;
   message: string;
   data: T;
 }
@@ -50,9 +50,7 @@ export interface UserResponse {
 
 // Define login response type
 export interface LoginResponse {
-  message: string;
   token: string;
-  userId: number;
 }
 
 // Define wallet response type
@@ -81,6 +79,24 @@ export type TransactionResponse = {
   receiverFullname?: string;
 };
 
+// Define transaction payload
+export interface TopUpPayload {
+  walletId: number;
+  transactionType: "TOP_UP";
+  amount: string;
+  recipientAccountNumber?: string;
+  description?: string;
+  option: string;
+}
+
+export interface TransferPayload {
+  walletId: number;
+  transactionType: "TRANSFER";
+  amount: string;
+  recipientAccountNumber: string;
+  description?: string;
+}
+
 export interface PaginatedTransactionResponse {
   content: TransactionResponse[];
   totalPages: number;
@@ -99,6 +115,9 @@ export interface PaginatedTransactionResponse {
 }
 
 export interface ApiPaginatedResponse<T> {
+  data: {
+    content: T; 
+  };
   status: string;
   message: string;
   content: T;
@@ -144,191 +163,117 @@ const getAuthToken = async () => {
 
 // Function to register a new user
 export const registerUser = async (userData: RegisterUserPayload): Promise<UserResponse> => {
-  try {
-    const response = await api.post<UserResponse>("/api/auth/register", userData);
-    return response.data;
-  } catch (error: any) {
-    console.error("🚨 Registration Error:", error.response?.data?.message || error.message);
-    throw new Error(error.response?.data?.message || "Failed to register user.");
-  }
+  const response = await api.post<ApiResponse<UserResponse>>("/api/auth/register", userData);
+  return response.data.data;
 };
 
 // **Login User & Handle Wallet Creation**
 export const loginUserAndSetupWallet = async (email: string, password: string) => {
-  try {
-    console.log("🟡 Attempting login with:", email);
+  const loginResponse = await api.post<ApiResponse<LoginResponse>>("/api/auth/login", { email, password });
+  const token = loginResponse.data.data.token;
+  await AsyncStorage.setItem("authToken", token);
+  setAuthToken(token);
+  console.log("🔑 Token Stored in AsyncStorage:", token);
 
-    // Step 1: Login User
-    const loginResponse = await api.post<LoginResponse>("/api/auth/login", { email, password });
-    console.log("✅ Login Successful:", loginResponse.data);
+  const userResponse = await api.get<ApiResponse<UserResponse>>(`/api/users/me`);
+  const userData = userResponse.data.data;
+  const userId = userData.id;
 
-    const { token, userId } = loginResponse.data;
-    if (!token || !userId) throw new Error("Invalid login response");
+  const walletResponse = await api.get<ApiResponse<WalletResponse[]>>(`/api/wallets/user/${userId}`);
+  const wallets = walletResponse.data.data;
+  const userWallet = wallets.find(wallet => wallet.user.id === userId);
 
-    // Step 2: Save Token & Set Auth Header
-    await AsyncStorage.setItem("authToken", token);
-    setAuthToken(token);
-    console.log("🔑 Token Stored in AsyncStorage:", token);
+  const walletData = userWallet || await createWallet(userId);
+  return { userData, walletData };
+};
 
-    // Step 3: Get User Data
-    const userResponse = await api.get<UserResponse>(`/api/users/${userId}`);
-    const userData = userResponse.data;
-
-    console.log("UserData: ", userData)
-
-    if (!userData) throw new Error("User data not found.");
-
-    // Step 4: Check Existing Wallet
-    let walletData: WalletResponse | null = null;
-    try {
-      console.log("🔍 Checking for existing wallet...");
-      const walletResponse = await api.get<ApiResponse<WalletResponse[]>>(`/api/wallets/user/${userId}`);
-
-      const wallets = walletResponse.data.data || walletResponse.data; // ✅ Covernya dua kemungkinan
-      console.log("🔎 Found wallets:", wallets);
-
-      // Cek apakah ada wallet yang cocok dengan userId
-      let userWallet = null;
-      for (const wallet of wallets) {
-        if (wallet.user.id === userData.id) { // FIXED: Pakai userId, bukan user.id
-          userWallet = wallet;
-          break; // Stop loop begitu ketemu wallet yang cocok
-        }
-      }
-
-      if (userWallet) {
-        console.log("💰 Wallet Found:", userWallet);
-        walletData = userWallet; // FIXED: Simpan wallet yang ditemukan
-      } else {
-        console.log("❌ No wallet found for this user, creating one...");
-        walletData = await createWallet(userId);
-      }
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        console.log("❌ Wallet Not Found, Creating New Wallet...");
-        walletData = await createWallet(userId);
-      } else {
-        console.error("⚠️ Wallet Error:", error);
-        throw new Error("Failed to check or create wallet.");
-      }
-    }
-
-    return { userData, walletData };
-  } catch (error: any) {
-    console.error("🚨 Login Error:", error.response?.data?.message || error.message);
-    throw new Error("Login failed. Please try again.");
-  }
+export const getCurrentUser = async (token: string) => {
+  return api.get<{ data: UserResponse }>("/api/users/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
 
 // **Create Wallet**
 export const createWallet = async (userId: number): Promise<WalletResponse> => {
-  try {
-    const token = await getAuthToken();
-    console.log("⚡ Creating wallet for user:", userId);
-    const response = await api.post<ApiResponse<WalletResponse>>(
-      `/api/wallets/${userId}`,
-      { userId },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    console.log("✅ Wallet Created:", response.data);
-    const wallet = response.data?.data || response.data; // Menangani dua kemungkinan struktur response
-    if (!wallet || !wallet.id) throw new Error("Invalid wallet response format");
-    return wallet;
-
-  } catch (error) {
-    console.error("🚨 Create Wallet Error:", error);
-    throw new Error("Failed to create wallet.");
-  }
+  const token = await getAuthToken();
+  const response = await api.post<ApiResponse<WalletResponse>>(`/api/wallets/${userId}`, { userId }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.data;
 };
 
 export const getAllWallets = async () => {
-  const res = await fetch(`${API_BASE_URL}/api/wallets`);
-  if (!res.ok) throw new Error("Failed to fetch wallets");
-  return res.json();
+  const token = await getAuthToken();
+  console.log("token di getAllWallets:", token);
+  if (!token) throw new Error("Token required");
+
+  const res = await api.get<ApiResponse<WalletResponse[]>>("/api/wallets", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (res.data.status === "success" && Array.isArray(res.data.data)) {
+    return res.data.data;
+  }
+
+  throw new Error(res.data.message || "Failed to fetch wallets");
 };
 
 // Get wallet by ID
 export const getWalletById = async (walletId: number): Promise<WalletResponse> => {
-  try {
-    const token = await getAuthToken();
-    setAuthToken(token);
+  const token = await getAuthToken();
+  setAuthToken(token);
+  const response = await api.get<ApiResponse<WalletResponse>>(`/api/wallets/${walletId}`);
+  return response.data.data;
+};
 
-    const response = await api.get<ApiResponse<WalletResponse>>(`/api/wallets/${walletId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const wallet = response.data?.data || response.data;
-    if (!wallet || !wallet.id) throw new Error("Invalid wallet response format");
-
-    return wallet;
-  } catch (error: any) {
-    console.error("🚨 Get Wallet Error:", error.response?.data?.message || error.message);
-    throw new Error("Failed to fetch wallet.");
-  }
+export const getWalletByUserId = async (userId: number, token: string) => {
+  return api.get<ApiResponse<WalletResponse[]>>(`/api/wallets/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
 
 // **Logout User**
 export const logoutUser = async () => {
   try {
+    const token = await AsyncStorage.getItem("authToken");
+
+    if (token) {
+      await api.post(
+        "/api/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
+    }
+
     await AsyncStorage.removeItem("authToken");
+    
     setAuthToken(null);
-    console.log("🚪 User Logged Out");
+    
+    console.log("Logged out successfully!");
   } catch (error) {
-    console.error("⚠️ Logout Error:", error);
+    console.error("Error during logout:", error);
   }
 };
-
-// Define transaction payload
-export interface TopUpPayload {
-  walletId: number;
-  transactionType: "TOP_UP";
-  amount: string;
-  recipientAccountNumber?: string;
-  description?: string;
-  option: string;
-}
 
 // Function to perform top up
-export const topUpWallet = async (payload: TopUpPayload): Promise<any> => {
-  try {
-    const token = await getAuthToken();
-    setAuthToken(token);
-
-    const response = await api.post("/api/transactions", payload, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    console.log("✅ Top Up Successful:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("🚨 Top Up Error:", error.response?.data?.message || error.message);
-    throw new Error("Top up failed.");
-  }
+export const topUpWallet = async (payload: TopUpPayload): Promise<TransactionResponse> => {
+  const token = await getAuthToken();
+  setAuthToken(token);
+  const response = await api.post<ApiResponse<TransactionResponse>>("/api/transactions", payload);
+  return response.data.data;
 };
 
-export interface TransferPayload {
-  walletId: number;
-  transactionType: "TRANSFER";
-  amount: string;
-  recipientAccountNumber: string;
-  description?: string;
-}
-
-export const transfer = async (payload: TransferPayload): Promise<any> => {
-  try {
-    const token = await getAuthToken();
-    setAuthToken(token);
-
-    const response = await api.post("/api/transactions", payload, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    console.log("✅ Transfer Successful:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("🚨 Transfer Error:", error.response?.data?.message || error.message);
-    throw new Error("Transfer failed.");
-  }
+export const transfer = async (payload: TransferPayload): Promise<TransactionResponse> => {
+  const token = await getAuthToken();
+  setAuthToken(token);
+  const response = await api.post<ApiResponse<TransactionResponse>>("/api/transactions", payload);
+  return response.data.data;
 };
 
 export const getTransactionsByWalletId = async (
@@ -342,13 +287,13 @@ export const getTransactionsByWalletId = async (
     sortBy?: string;
     order?: "asc" | "desc";
   }
-): Promise<ApiResponse<PaginatedTransactionResponse>> => {
+): Promise<PaginatedTransactionResponse> => {
   const token = options?.token || (await getAuthToken());
 
   const params: Record<string, any> = {
     walletId,
     page: options?.page ?? 0,
-    size: options?.size ?? 10,
+    size: options?.size ?? 100,
     sortBy: options?.sortBy ?? "transactionDate",
     order: options?.order ?? "desc",
   };
@@ -359,31 +304,20 @@ export const getTransactionsByWalletId = async (
   const response = await api.get<ApiResponse<PaginatedTransactionResponse>>(
     `/api/transactions?walletId=${walletId}`,
     {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       params,
     }
   );
 
-  return response.data;
+  return response.data.data;
 };
 
 // 🔍 Get Wallet Summary
-export const getWalletSummary = async (
-  walletId: number
-): Promise<WalletSummaryDTO> => {
+export const getWalletSummary = async (walletId: number): Promise<WalletSummaryDTO> => {
   const token = await getAuthToken();
   setAuthToken(token);
-
-  const response = await api.get<WalletSummaryDTO>(
-    `/api/transactions/summary/${walletId}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  return response.data;
+  const response = await api.get<ApiResponse<WalletSummaryDTO>>(`/api/transactions/summary/${walletId}`);
+  return response.data.data;
 };
 
 // 📊 Get Balance Graph
@@ -392,38 +326,23 @@ export const getBalanceGraph = async (params: {
   year: number;
   month?: string;
   walletId: number;
-}): Promise<ApiResponse<BalanceGraphResult[]>> => {
+}): Promise<BalanceGraphResult> => {
   const token = await getAuthToken();
   setAuthToken(token);
-
-  const response = await api.post<ApiResponse<BalanceGraphResult[]>>(
-    "/api/transactions/graph",
-    params,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  return response.data;
+  const response = await api.post<ApiResponse<BalanceGraphResult>>("/api/transactions/graph", params);
+  return response.data.data;
 };
 
 // Download Transaction Proof
 export const downloadTransactionProof = async (transactionId: number, token: string) => {
   const url = `${API_BASE_URL}/api/transactions/export-pdf/${transactionId}`;
-
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    // Accept: "application/pdf",
-  };
+  const headers = { Authorization: `Bearer ${token}` };
 
   if (Platform.OS === "web") {
     const response = await axios.get(url, {
       headers,
       responseType: "blob",
     });
-
     const blob = new Blob([response.data], { type: "application/pdf" });
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -438,12 +357,8 @@ export const downloadTransactionProof = async (transactionId: number, token: str
       FileSystem.documentDirectory + `transaction-${transactionId}.pdf`,
       { headers }
     );
-
     const result = await downloadResumable.downloadAsync();
-
     if (result?.uri) {
-      console.log("✅ PDF saved to:", result.uri);
-
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(result.uri);
       } else {

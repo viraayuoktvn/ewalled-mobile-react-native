@@ -1,5 +1,5 @@
-// contexts/ThemeContext.tsx
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -19,12 +19,35 @@ export const useTheme = () => {
 
 interface ThemeProviderProps {
   children: ReactNode;
-  value: ThemeContextType;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, value }) => {
+// ThemeProvider dengan penyimpanan preferensi tema di AsyncStorage
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  // Load tema dari AsyncStorage saat pertama kali aplikasi dimuat
+  useEffect(() => {
+    const loadTheme = async () => {
+      const storedTheme = await AsyncStorage.getItem('theme');
+      if (storedTheme === 'dark') {
+        setIsDarkMode(true);
+      } else {
+        setIsDarkMode(false);
+      }
+    };
+
+    loadTheme();
+  }, []);
+
+  // Toggle antara light dan dark mode
+  const toggleTheme = async () => {
+    const newTheme = !isDarkMode ? 'dark' : 'light';
+    setIsDarkMode(!isDarkMode);
+    await AsyncStorage.setItem('theme', newTheme); // Simpan preferensi tema
+  };
+
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

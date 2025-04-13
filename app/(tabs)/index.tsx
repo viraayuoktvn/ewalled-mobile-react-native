@@ -4,8 +4,8 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, { ApiPaginatedResponse, ApiResponse, TransactionResponse, UserResponse, WalletResponse } from "@/services/api";
-import { getImage } from "@/utils/getImage";
 import { useFocusEffect } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
 
 const Dashboard: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          const wallets = Array.isArray(walletResponse.data) ? walletResponse.data : [];
+          const wallets = Array.isArray(walletResponse.data.data) ? walletResponse.data.data : [];
 
           const userWallet = wallets.find(wallet => wallet.user.id === user.id);
 
@@ -80,7 +80,7 @@ const Dashboard: React.FC = () => {
           }
         );
 
-        const allTx = response.data.content || [];
+        const allTx = response.data.data.content || [];
         const sortedTx = allTx.sort((a: TransactionResponse, b: TransactionResponse) => b.id - a.id);
         setRecentTransactions(sortedTx.slice(0, 4));
       } catch (err) {
@@ -93,10 +93,10 @@ const Dashboard: React.FC = () => {
 
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}>
-      <View className="mt-6 flex-row justify-between items-center">
+      <View className="mt-7 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Image
-            source={userData?.avatarUrl ? { uri: userData.avatarUrl } : getImage("default-avatar.png")}
+            source={userData?.avatarUrl ? { uri: userData.avatarUrl } : require("../../public/images/default-avatar.png")}
             className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
           />
           <View>
@@ -109,13 +109,10 @@ const Dashboard: React.FC = () => {
           </View>
         </View>
         <TouchableOpacity onPress={toggleTheme}>
-          <Image
-            source={
-              isDarkMode
-                ? require("../../public/images/moon.png")
-                : require("../../public/images/sun2.png")
-            }
-            style={{ width: 50, height: 50 }}
+          <Feather
+            name={isDarkMode ? "moon" : "sun"}
+            size={30}
+            color={isDarkMode ? "white" : "orange"} 
           />
         </TouchableOpacity>
       </View>
@@ -146,36 +143,42 @@ const Dashboard: React.FC = () => {
 
       <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
         <View>
-          <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>Balance</Text>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"} text-lg`}>Balance</Text>
           <View className="flex-row items-center">
             <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
-              {isBalanceHidden ? "***************" : `Rp ${walletData?.balance.toLocaleString() || "Loading..."}`}
+              {isBalanceHidden ? "***************" : `Rp ${walletData?.balance.toLocaleString('id-ID') || "Loading..."}`}
             </Text>
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
-              <Image source={require("../../public/images/view.png")} className="ml-3" />
+              <Feather
+                name={isBalanceHidden ? "eye" : "eye-off"}
+                size={20}
+                color="gray"
+                style={{ marginLeft: 12 }} 
+              />
             </TouchableOpacity>
           </View>
         </View>
         <View className="flex items-end">
           <TouchableOpacity
-            className="bg-blue-500 p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
+            className="bg-[#0061FF] p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
             onPress={() => router.push("/topup")}
           >
-            <Image source={require("../../public/images/plus.png")} className="w-7 h-7" />
+            <Feather name="plus" size={24} color="white" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-blue-500 p-2 rounded-[10px] shadow-md shadow-[#19918F]"
+            className="bg-[#0061FF] p-2 rounded-[10px] shadow-md shadow-[#19918F]"
             onPress={() => router.push("/transfer")}
           >
-            <Image source={require("../../public/images/share.png")} className="w-7 h-7" />
+            <Feather name="send" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* Transaction History */}
       <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-lg`}>
         <View className="flex-row justify-between items-center mb-4">
-          <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold`}>
+          <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-xl`}>
             Transaction History
           </Text>
           <TouchableOpacity onPress={() => router.push("/transactions")}>
@@ -192,7 +195,7 @@ const Dashboard: React.FC = () => {
             const isTopup = item.transactionType === "TOP_UP";
             const isSender = item.walletId === walletData?.id;
             const isReceiver = item.recipientWalletId === walletData?.id;
-          
+
             const name =
               item.transactionType === "TOP_UP"
                 ? item.senderFullname
@@ -205,31 +208,39 @@ const Dashboard: React.FC = () => {
               month: "long",
               year: "numeric",
             });
-          
-            const amount = `${isTopup || isReceiver ? "+" : "-"} ${parseInt(item.amount as any).toLocaleString("id-ID")},00`;
+
+            const amountValue = parseFloat(item.amount as any);
+            const amount = `${isTopup || isReceiver ? "+" : "-"} ${amountValue.toLocaleString("id-ID", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`;
             const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
 
             return (
-              <View
+              <TouchableOpacity
                 key={i}
-                className="flex-row justify-between items-center border-b border-gray-300 py-3"
+                onPress={() => router.push(`/proof?transactionId=${item.id}`)}
               >
-                <View className="flex-row items-center">
-                  <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
-                  <View>
-                    <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
-                      {name || "Unknown"}
-                    </Text>
-                    <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
-                      {item.transactionType === "TOP_UP" ? "Topup" : "Transfer"}
-                    </Text>
-                    <Text className="text-gray-500 text-xs">{date}</Text>
+                <View
+                  className="flex-row justify-between items-center border-b border-gray-300 py-3"
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
+                    <View>
+                      <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
+                        {name || "Unknown"}
+                      </Text>
+                      <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+                        {item.transactionType === "TOP_UP" ? "Topup" : "Transfer"}
+                      </Text>
+                      <Text className="text-gray-500 text-xs">{date}</Text>
+                    </View>
                   </View>
+                  <Text className={`${amountColor} font-bold`}>
+                    {amount}
+                  </Text>
                 </View>
-                <Text className={`${amountColor} font-bold`}>
-                  {amount}
-                </Text>
-              </View>
+              </TouchableOpacity>
             );
           })
         )}
