@@ -233,31 +233,41 @@ export const getWalletByUserId = async (userId: number, token: string) => {
 };
 
 // **Logout User**
-export const logoutUser = async () => {
+export const logoutUser = async (): Promise<boolean> => {
   try {
     const token = await AsyncStorage.getItem("authToken");
 
     if (token) {
-      await api.post(
+      const response = await api.post(
         "/api/auth/logout",
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+
+      if (response.data.status === "success") {
+        console.log("Logged out from server.");
+      } else {
+        console.warn("Server logout failed:", response.data.message);
+        return false;
+      }
     }
 
     await AsyncStorage.removeItem("authToken");
-    
     setAuthToken(null);
-    
-    console.log("Logged out successfully!");
+
+    console.log("Logged out locally.");
+    return true;
+
   } catch (error) {
     console.error("Error during logout:", error);
+    return false;
   }
 };
+
 
 // Function to perform top up
 export const topUpWallet = async (payload: TopUpPayload): Promise<TransactionResponse> => {

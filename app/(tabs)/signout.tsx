@@ -7,8 +7,12 @@ const SignOut: React.FC = () => {
 
   useEffect(() => {
     const signOut = async () => {
-      await logoutUser(); 
-      router.replace("/login"); 
+      const success = await logoutUser();
+      if (success) {
+        router.replace("/login");
+      } else {
+        console.log("Logout failed. Staying on the page.");
+      }
     };
 
     signOut();

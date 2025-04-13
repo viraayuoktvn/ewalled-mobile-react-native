@@ -247,7 +247,7 @@ const TransactionSuccess: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={() => router.push("/")}
               className="bg-blue-600 px-6 py-3 rounded-xl min-w-[120px] items-center mt-4"
             >
               <Text className="text-white font-bold">Done</Text>
