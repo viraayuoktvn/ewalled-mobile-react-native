@@ -225,7 +225,10 @@ const Dashboard: React.FC = () => {
                   className="flex-row justify-between items-center border-b border-gray-300 py-3"
                 >
                   <View className="flex-row items-center">
-                    <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
+                    <Image
+                      source={require("../../public/images/default-avatar.png")}
+                      className="w-12 h-12 rounded-full mr-3"
+                    />
                     <View>
                       <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
                         {name || "Unknown"}
