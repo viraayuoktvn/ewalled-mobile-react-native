@@ -236,18 +236,19 @@ const Transactions = () => {
             {paginatedTx.map(renderTransaction)}
 
             {/* Pagination */}
-              <View className="flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1">
-                {/* First */}
-                <TouchableOpacity
-                  onPress={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
-                >
-                  <Text className={`text-sm font-semibold ${currentPage === 1 ? "text-gray-500" : "text-[#0061FF]"}`}>First</Text>
-                </TouchableOpacity>
+            <View className="flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1 overflow-x-auto">
+              {/* First */}
+              <TouchableOpacity
+                onPress={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
+              >
+                <Text className={`text-sm font-semibold ${currentPage === 1 ? "text-gray-500" : "text-[#0061FF]"}`}>First</Text>
+              </TouchableOpacity>
 
-                {/* Numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {/* Page numbers - Show all pages if totalPages is small */}
+              {totalPages <= 10 ? (
+                Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <TouchableOpacity
                     key={page}
                     onPress={() => setCurrentPage(page)}
@@ -255,17 +256,32 @@ const Transactions = () => {
                   >
                     <Text className={`font-semibold ${page === currentPage ? "text-white" : "text-[#0061FF]"}`}>{page}</Text>
                   </TouchableOpacity>
-                ))}
+                ))
+              ) : (
+                // If totalPages > 10, limit the visible pages (for performance reasons)
+                <>
+                  {[...Array(5).keys()].map((page, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setCurrentPage(page + 1)}
+                      className={`px-3 py-2 border ${page + 1 === currentPage ? "bg-[#0061FF] border-[#0061FF]" : "border-[#0061FF] bg-[#E9E9E9]"}`}
+                    >
+                      <Text className={`font-semibold ${page + 1 === currentPage ? "text-white" : "text-[#0061FF]"}`}>{page + 1}</Text>
+                    </TouchableOpacity>
+                  ))}
+                  <Text className="px-3 py-2">...</Text>
+                </>
+              )}
 
-                {/* Next */}
-                <TouchableOpacity
-                  onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
-                >
-                  <Text className={`text-sm font-semibold ${currentPage === totalPages ? "text-gray-500" : "text-[#0061FF]"}`}>Next</Text>
-                </TouchableOpacity>
-              </View>
+              {/* Next */}
+              <TouchableOpacity
+                onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
+              >
+                <Text className={`text-sm font-semibold ${currentPage === totalPages ? "text-gray-500" : "text-[#0061FF]"}`}>Next</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
       </ScrollView>
