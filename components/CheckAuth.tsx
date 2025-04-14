@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import api from '@/services/api';  // Ensure api instance is imported
+import api from '@/services/api'; 
 import { jwtDecode } from 'jwt-decode';
 
 // Function to check if the token is expired
@@ -36,7 +35,7 @@ export const checkAuth = async (router: any) => {
     return true;  // If the token is valid, proceed
   } catch (error) {
     // If the request failed (401 Unauthorized), handle it
-    console.log("❌ Token rejected by server: ", error);
+    console.log("Token rejected by server: ", error);
     await AsyncStorage.removeItem('authToken');  // Clear the invalid token
     router.replace('/login');  // Redirect to login page
     return false;  // Return false since authentication failed

@@ -14,7 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerUser } from "@/services/api";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
@@ -246,8 +246,16 @@ const RegisterScreen: React.FC = () => {
 
 
       <View className="mt-6 flex-row justify-center items-center">
-        <TouchableOpacity id="checkbox-tnc" onPress={() => setIsChecked(!isChecked)} className={`w-6 h-6 mr-2 border-2 rounded-md ${isChecked ? "bg-blue-600 border-blue-600" : "border-gray-400"}`}> 
-          {isChecked && <Text className="text-white font-bold">✓</Text>}
+        <TouchableOpacity
+          id="checkbox-tnc"
+          onPress={() => setIsChecked(!isChecked)}
+          className="mr-2"
+        >
+          <FontAwesome
+            name={isChecked ? "check-square" : "square-o"}
+            size={24}
+            color={isChecked ? "#2563EB" : "#9CA3AF"} // Biru saat centang, abu saat kosong
+          />
         </TouchableOpacity>
         <Text className="text-black">I have agree to the </Text>
         <View className="flex-row items-center">

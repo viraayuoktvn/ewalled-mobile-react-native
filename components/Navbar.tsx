@@ -25,7 +25,8 @@ export default function Navbar() {
         elevation: 5,
         zIndex: 10,
       }}
-    >
+    > 
+    {/* Logo app */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
         <TouchableOpacity onPress={() => router.replace("/")}>
           <Image
@@ -37,6 +38,7 @@ export default function Navbar() {
         </TouchableOpacity>
       </View>
 
+      {/* Change dark/light mode */}
       <TouchableOpacity onPress={toggleTheme} style={{ marginTop: 20 }}>
         <Feather
           id='theme-mode'

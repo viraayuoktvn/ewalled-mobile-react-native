@@ -239,7 +239,7 @@ export const getWalletByUserId = async (userId: number, token: string) => {
   });
 };
 
-// **Logout User**
+// Logout User
 export const logoutUser = async (): Promise<boolean> => {
   try {
     const token = await AsyncStorage.getItem("authToken");
@@ -284,6 +284,7 @@ export const topUpWallet = async (payload: TopUpPayload): Promise<TransactionRes
   return response.data.data;
 };
 
+// Function transfer
 export const transfer = async (payload: TransferPayload): Promise<TransactionResponse> => {
   const token = await getAuthToken();
   setAuthToken(token);
@@ -291,6 +292,7 @@ export const transfer = async (payload: TransferPayload): Promise<TransactionRes
   return response.data.data;
 };
 
+// Get Transaction by Wallet ID
 export const getTransactionsByWalletId = async (
   walletId: number,
   options?: {
