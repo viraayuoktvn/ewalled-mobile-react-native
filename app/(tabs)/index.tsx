@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
     return "Night";
   };
 
+  // Fetch data user and wallet
   useFocusEffect(
     useCallback(() => {
       const fetchUserAndWallet = async () => {
@@ -64,6 +65,7 @@ const Dashboard: React.FC = () => {
     }, [])
   );
 
+  // Fetch recent transactions
   useEffect(() => {
     const fetchRecentTransactions = async () => {
       if (!walletData) return;
@@ -93,6 +95,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}>
+      {/* Profile user */}
       <View className="mt-7 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Image
@@ -109,6 +112,7 @@ const Dashboard: React.FC = () => {
             </Text>
           </View>
         </View>
+        {/* Dark or light mode */}
         <TouchableOpacity onPress={toggleTheme}>
           <Feather
             id="btn-toggle-theme"
@@ -119,6 +123,7 @@ const Dashboard: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Greeting */}
       <View className="mt-6 flex-row justify-between items-center p-">
         <View className="flex-1">
           <Text id="text-greeting" className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>

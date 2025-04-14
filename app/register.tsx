@@ -48,10 +48,10 @@ const RegisterScreen: React.FC = () => {
       return;
     }
   
-    if (!isChecked) {
-      Alert.alert("Error", "You must agree to the terms and conditions.");
-      return;
-    }
+    // if (!isChecked) {
+    //   Alert.alert("Error", "You must agree to the terms and conditions.");
+    //   return;
+    // }
   
     setLoading(true);
     try {
@@ -66,7 +66,7 @@ const RegisterScreen: React.FC = () => {
     
       await AsyncStorage.setItem("userData", JSON.stringify(newUser));
   
-      // Redirect ke halaman login
+      // Redirect  halaman login
       router.replace("/login");
     } catch (error: any) {
       console.error("🚨 Registration Failed:", error.message);
@@ -244,7 +244,6 @@ const RegisterScreen: React.FC = () => {
         {errors.avatarUrl ? <Text className="text-[#FF0000] mt-1 ml-2">{errors.avatarUrl}</Text> : null}
       </View>
 
-
       <View className="mt-6 flex-row justify-center items-center">
         <TouchableOpacity
           id="checkbox-tnc"
@@ -252,9 +251,10 @@ const RegisterScreen: React.FC = () => {
           className="mr-2"
         >
           <FontAwesome
+            id="checkbox-tnc-square"
             name={isChecked ? "check-square" : "square-o"}
             size={24}
-            color={isChecked ? "#2563EB" : "#9CA3AF"} // Biru saat centang, abu saat kosong
+            color={isChecked ? "#2563EB" : "#9CA3AF"} 
           />
         </TouchableOpacity>
         <Text className="text-black">I have agree to the </Text>
@@ -326,7 +326,7 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
-      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
+      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 bg-blue-600`} onPress={handleRegister}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>
 
