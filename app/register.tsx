@@ -48,10 +48,10 @@ const RegisterScreen: React.FC = () => {
       return;
     }
   
-    // if (!isChecked) {
-    //   Alert.alert("Error", "You must agree to the terms and conditions.");
-    //   return;
-    // }
+    if (!isChecked) {
+      Alert.alert("Error", "You must agree to the terms and conditions.");
+      return;
+    }
   
     setLoading(true);
     try {
@@ -326,7 +326,7 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
-      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 bg-blue-600`} onPress={handleRegister}>
+      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>
 
