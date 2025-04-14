@@ -141,6 +141,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
+          id="fullname"
           placeholder="Fullname"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={fullname}
@@ -155,6 +156,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
+          id="username"
           placeholder="Username"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={username}
@@ -169,6 +171,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
+          id="email"
           placeholder="Email"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={email}
@@ -185,6 +188,7 @@ const RegisterScreen: React.FC = () => {
       <View className="w-full max-w-md mb-6">
         <View className="flex-row items-center bg-gray-100 rounded-lg">
           <TextInput
+            id="password"
             placeholder="Password"
             className="flex-1 p-4"
             secureTextEntry={!showPassword}
@@ -195,7 +199,7 @@ const RegisterScreen: React.FC = () => {
             }}
             onBlur={() => validateInput("password", password)}
           />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity id="show-password" onPress={() => setShowPassword(!showPassword)}>
             <Feather
               name={showPassword ? "eye-off" : "eye"}
               className="px-5"
@@ -211,6 +215,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
+          id="phonenumber"
           placeholder="Phone Number"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={phoneNumber}
@@ -226,6 +231,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
+          id="avatarurl"
           placeholder="Avatar URL (Optional)"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={avatarUrl}
@@ -240,12 +246,12 @@ const RegisterScreen: React.FC = () => {
 
 
       <View className="mt-6 flex-row justify-center items-center">
-        <TouchableOpacity onPress={() => setIsChecked(!isChecked)} className={`w-6 h-6 mr-2 border-2 rounded-md ${isChecked ? "bg-blue-600 border-blue-600" : "border-gray-400"}`}> 
+        <TouchableOpacity id="checkbox-tnc" onPress={() => setIsChecked(!isChecked)} className={`w-6 h-6 mr-2 border-2 rounded-md ${isChecked ? "bg-blue-600 border-blue-600" : "border-gray-400"}`}> 
           {isChecked && <Text className="text-white font-bold">✓</Text>}
         </TouchableOpacity>
         <Text className="text-black">I have agree to the </Text>
         <View className="flex-row items-center">
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity id="tnc-modal" onPress={() => setModalVisible(true)}>
             <Text className="text-[#0061FF]">Terms and Conditions</Text>
           </TouchableOpacity>
           <Text className="text-[#FF0000] ml-1">*</Text>
@@ -254,6 +260,7 @@ const RegisterScreen: React.FC = () => {
 
       {/* Modal for Terms and Conditions */}
       <Modal
+        id="modal-tnc"
         animationType="slide"
         transparent={true}
         visible={modalVisible}
@@ -263,12 +270,12 @@ const RegisterScreen: React.FC = () => {
           <View className="w-full bg-white rounded-lg h-full p-4">
             {/* Header */}
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-300">
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <TouchableOpacity id="back" onPress={() => setModalVisible(false)}>
                 <Feather name="arrow-left" size={24} color= "black" />
               </TouchableOpacity>
               <Text className="text-lg font-bold">Terms and Conditions</Text>
-              <View className="w-10" />
-            </View>
+            <View className="w-10" />
+          </View>
 
             {/* Scrollable Content */}
             <ScrollView style={{ maxHeight: 1000 }} className="mt-4">
@@ -311,14 +318,14 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
-      <TouchableOpacity className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
+      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>
 
       {/* Login Link */}
       <View className="mt-3 mb-3 flex-row items-start justify-start w-full max-w-md">
         <Text className="text-black">Have an account? </Text>
-        <TouchableOpacity onPress={() => router.push("/login")}>
+        <TouchableOpacity id="text-login" onPress={() => router.push("/login")}>
           <Text className="text-[#0061FF]">Login here</Text>
         </TouchableOpacity>
       </View>

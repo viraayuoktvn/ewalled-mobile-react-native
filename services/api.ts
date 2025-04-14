@@ -15,14 +15,14 @@ const api = axios.create({
   },
 });
  
-// Define a generic API response type
+// Base response API type
 export interface ApiResponse<T> {
   status: string;
   message: string;
   data: T;
 }
 
-// Define user registration request payload
+// Registration request payload
 export interface RegisterUserPayload {
   email: string;
   username: string;
@@ -64,13 +64,14 @@ export interface WalletResponse {
   updatedAt: string;
 }
 
+// Transaction response
 export type TransactionResponse = {
   id: number;
   walletId: number;
   transactionType: "TOP_UP" | "TRANSFER";
   amount: number;
   recipientWalletId?: number | null;
-  transactionDate: string;
+  transactionDate: string; // date range for filter
   description?: string;
   option?: string;
   senderAccountNumber?: string;
@@ -79,7 +80,7 @@ export type TransactionResponse = {
   receiverFullname?: string;
 };
 
-// Define transaction payload
+// Define transaction request payload
 export interface TopUpPayload {
   walletId: number;
   transactionType: "TOP_UP";
@@ -89,6 +90,7 @@ export interface TopUpPayload {
   option: string;
 }
 
+// Transfer request payload
 export interface TransferPayload {
   walletId: number;
   transactionType: "TRANSFER";
@@ -97,6 +99,7 @@ export interface TransferPayload {
   description?: string;
 }
 
+// Response for paginated in transactions page
 export interface PaginatedTransactionResponse {
   content: TransactionResponse[];
   totalPages: number;
@@ -114,13 +117,13 @@ export interface PaginatedTransactionResponse {
   empty: boolean;
 }
 
+// API response for paginated transactions page
 export interface ApiPaginatedResponse<T> {
   data: {
     content: T; 
   };
   status: string;
   message: string;
-  content: T;
 }
 
 // Wallet Summary DTO
@@ -130,6 +133,7 @@ export interface WalletSummaryDTO {
   balance: number;
 }
 
+// Response Graph
 export interface BalanceGraphResponse {
   label: string;
   income: number;
@@ -138,6 +142,7 @@ export interface BalanceGraphResponse {
   outcomePercent: number;
 }
 
+// Result graph
 export interface BalanceGraphResult {
   walletId: number;
   view: string;
@@ -156,18 +161,18 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
-// Function to get the token from AsyncStorage
+// Get the token from AsyncStorage
 const getAuthToken = async () => {
   return await AsyncStorage.getItem("authToken");
 };
 
-// Function to register a new user
+// Register a new user
 export const registerUser = async (userData: RegisterUserPayload): Promise<UserResponse> => {
   const response = await api.post<ApiResponse<UserResponse>>("/api/auth/register", userData);
   return response.data.data;
 };
 
-// **Login User & Handle Wallet Creation**
+// Login User & Handle Wallet Creation
 export const loginUserAndSetupWallet = async (email: string, password: string) => {
   const loginResponse = await api.post<ApiResponse<LoginResponse>>("/api/auth/login", { email, password });
   const token = loginResponse.data.data.token;
@@ -186,13 +191,14 @@ export const loginUserAndSetupWallet = async (email: string, password: string) =
   return { userData, walletData };
 };
 
+// Get Current User
 export const getCurrentUser = async (token: string) => {
   return api.get<{ data: UserResponse }>("/api/users/me", {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-// **Create Wallet**
+// Create Wallet
 export const createWallet = async (userId: number): Promise<WalletResponse> => {
   const token = await getAuthToken();
   const response = await api.post<ApiResponse<WalletResponse>>(`/api/wallets/${userId}`, { userId }, {
@@ -201,6 +207,7 @@ export const createWallet = async (userId: number): Promise<WalletResponse> => {
   return response.data.data;
 };
 
+// Get All Wallets
 export const getAllWallets = async () => {
   const token = await getAuthToken();
   if (!token) throw new Error("Token required");
