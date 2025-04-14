@@ -120,6 +120,7 @@ const TransactionSuccess: React.FC = () => {
           No transaction found.
         </Text>
         <TouchableOpacity
+          id="btn-back"
           onPress={() => router.push("/")}
           className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
         >
@@ -144,6 +145,7 @@ const TransactionSuccess: React.FC = () => {
         <View className="w-full max-w-[600px] pt-10">
           <View className="w-full overflow-hidden">
             <Image
+              id="navbar-success"
               source={require("../public/images/navbar-success.png")}
               style={{ width: "100%", height: 200 }}
               resizeMode="cover"
@@ -159,6 +161,7 @@ const TransactionSuccess: React.FC = () => {
           </Text>
 
           <Text
+            id="transaction-date"
             className={`text-center my-2 ${
               isDarkMode ? "text-gray-400" : "text-gray-500"
             }`}
@@ -216,6 +219,7 @@ const TransactionSuccess: React.FC = () => {
             )}
 
             <TouchableOpacity
+              id="btn-detail-transaction"
               onPress={() => setShowDetail(!showDetail)}
               className={`mt-3 py-2 px-3 rounded-lg items-center ${
                 isDarkMode ? "bg-gray-700" : "bg-blue-100"
@@ -233,6 +237,7 @@ const TransactionSuccess: React.FC = () => {
             }`}
           >
             <TouchableOpacity
+              id="btn-download"
               onPress={handleDownload}
               style={{
                 padding: 12,
@@ -246,6 +251,7 @@ const TransactionSuccess: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              id="btn-done"
               onPress={() => router.push("/")}
               className="bg-blue-600 px-6 py-3 rounded-xl min-w-[120px] items-center mt-4"
             >

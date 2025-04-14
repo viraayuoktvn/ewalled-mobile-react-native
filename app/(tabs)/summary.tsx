@@ -142,6 +142,7 @@ const SummaryPage = () => {
             }}
           >
             <Image
+              id="img-balance"
               source={require("@/public/images/balance.png")}
               style={{
                 width: 20,
@@ -152,7 +153,7 @@ const SummaryPage = () => {
           </View>
           <Text className="text-white text-lg font-semibold">Total Balance</Text>
         </View>
-        <Text className="text-2xl font-bold text-white">
+        <Text id="text-balance" className="text-2xl font-bold text-white">
           Rp {summary.balance.toLocaleString("id-ID")}
         </Text>
       </View>
@@ -172,6 +173,7 @@ const SummaryPage = () => {
               }}
             >
               <Image
+                id="img-income"
                 source={require("@/public/images/income.png")}
                 style={{
                   width: 20,
@@ -182,7 +184,7 @@ const SummaryPage = () => {
             </View>
             <Text className="text-lg font-semibold" style={{ color: colors.text }}>Income</Text>
         </View>
-        <Text style={{ color: colors.text }} className="text-xl font-bold">
+        <Text id="text-income" style={{ color: colors.text }} className="text-xl font-bold">
           Rp {summary.totalIncome.toLocaleString("id-ID")}
         </Text>
       </View>
@@ -201,6 +203,7 @@ const SummaryPage = () => {
               marginRight: 8,
             }}>
             <Image
+              id="img-outcome"
               source={require("@/public/images/outcome.png")}
               style={{
                 width: 20,
@@ -211,7 +214,7 @@ const SummaryPage = () => {
           </View>
           <Text className="text-lg font-semibold" style={{ color: colors.text }}>Outcome</Text>
         </View>
-        <Text style={{ color: colors.text }} className="text-xl font-bold">
+        <Text id="text-outcome" style={{ color: colors.text }} className="text-xl font-bold">
           Rp {summary.totalOutcome.toLocaleString("id-ID")}
         </Text>
       </View>
@@ -234,6 +237,7 @@ const SummaryPage = () => {
       <View className="rounded-full flex-row p-1 mb-4" style={{ backgroundColor: colors.switcher }}>
         {VIEWS.map((v) => (
           <TouchableOpacity
+            id={`switcher-${v}`}
             key={v}
             onPress={() => setView(v)}
             className={`flex-1 py-2 rounded-full items-center ${view === v ? "bg-blue-600" : ""}`}
@@ -254,6 +258,7 @@ const SummaryPage = () => {
           Choose a Year
         </Text>
         <View
+          id="dropdown-year-picker"
           className="mb-6"
           style={{
             backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
@@ -262,6 +267,7 @@ const SummaryPage = () => {
           }}
         >
           <Picker
+            id={`dropdown-year-picker-${year}`}
             selectedValue={year}
             onValueChange={(itemValue) => setYear(itemValue)}
             mode="dropdown"

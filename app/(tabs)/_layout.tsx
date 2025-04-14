@@ -56,7 +56,12 @@ export default function TabLayout() {
         tabBarActiveTintColor: isDarkMode ? Colors.dark.tint : "#FFFFFF",
         tabBarInactiveTintColor: isDarkMode ? "#AAAAAA" : "#FFFFFF",
         headerShown: false,
-        tabBarButton: HapticTab,
+        tabBarButton: (tabProps) => (
+          <HapticTab
+            {...tabProps}
+            testID={`tabs-${route.name}`} 
+          />
+        ),
         tabBarStyle: {
           backgroundColor: isDarkMode ? Colors.dark.background : "#0061FF",
           borderTopWidth: 0,
@@ -124,11 +129,31 @@ export default function TabLayout() {
         tabBarLabel: () => null,
       })}
     >
-      <Tabs.Screen name="summary" />
-      <Tabs.Screen name="topup" />
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="transfer" />
-      <Tabs.Screen name="signout" />
+      <Tabs.Screen 
+        name="summary"
+        options={{
+          tabBarButtonTestID: "tabs-summary"
+        }}/>
+      <Tabs.Screen 
+        name="topup"
+        options={{
+          tabBarButtonTestID: "tabs-topup"
+        }}/>
+      <Tabs.Screen 
+        name="index" 
+        options={{
+          tabBarButtonTestID: "tabs-dashboard"
+        }}/>
+      <Tabs.Screen 
+        name="transfer" 
+        options={{
+          tabBarButtonTestID: "tabs-transfer"
+        }}/>
+      <Tabs.Screen 
+        name="signout"
+        options={{
+          tabBarButtonTestID: "tabs-signout"
+        }}/>
     </Tabs>
   );
 }

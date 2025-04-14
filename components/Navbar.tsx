@@ -29,6 +29,7 @@ export default function Navbar() {
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
         <TouchableOpacity onPress={() => router.replace("/")}>
           <Image
+            id='logo-ewalled'
             source={require('../public/images/ewalled.png')}
             style={{ width: 160, height: 60 }}
             resizeMode="contain"
@@ -38,6 +39,7 @@ export default function Navbar() {
 
       <TouchableOpacity onPress={toggleTheme} style={{ marginTop: 20 }}>
         <Feather
+          id='theme-mode'
           name={isDarkMode ? "moon" : "sun"}
           size={30}
           color={isDarkMode ? "white" : "orange"} 

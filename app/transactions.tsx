@@ -131,6 +131,7 @@ const Transactions = () => {
 
     return (
       <TouchableOpacity
+        id="card-transaction-item"
         key={index}
         className={`rounded-2xl p-8 py-3 mb-2 shadow-sm ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
         onPress={() => router.push(`/proof?transactionId=${item.id}`)}
@@ -166,9 +167,9 @@ const Transactions = () => {
 
       {/* Dropdown Filter Date */}
       {showDateDropdown && (
-        <View className={`absolute top-[115px] left-4 z-20 w-32 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
+        <View id="dropdown-date" className={`absolute top-[115px] left-4 z-20 w-32 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
           {["DESC", "ASC"].map(order => (
-            <TouchableOpacity key={order} onPress={() => { setSortOrder(order as "ASC" | "DESC"); setShowDateDropdown(false); }}>
+            <TouchableOpacity id="dropdown-date-option" key={order} onPress={() => { setSortOrder(order as "ASC" | "DESC"); setShowDateDropdown(false); }}>
               <Text className={`py-1 ${isDarkMode ? "text-white" : "text-black"}`}>
                 {order === "DESC" ? "Terbaru" : "Terlama"}
               </Text>
@@ -179,9 +180,9 @@ const Transactions = () => {
 
       {/* Dropdown Filter Type */}
       {showTypeDropdown && (
-        <View className={`absolute top-[115px] right-4 z-20 w-40 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
+        <View id="dropdown-type" className={`absolute top-[115px] right-4 z-20 w-40 rounded-md shadow px-4 py-2 ${isDarkMode ? "bg-gray-700" : "bg-white"}`}>
           {["ALL", "TOP_UP", "TRANSFER"].map(type => (
-            <TouchableOpacity key={type} onPress={() => { setTransactionType(type as any); setShowTypeDropdown(false); }}>
+            <TouchableOpacity id="dropdown-type-option" key={type} onPress={() => { setTransactionType(type as any); setShowTypeDropdown(false); }}>
               <Text className={`py-1 ${isDarkMode ? "text-white" : "text-black"}`}>
                 {type === "ALL" ? "All" : type === "TOP_UP" ? "Topup" : "Transfer"}
               </Text>
@@ -193,7 +194,7 @@ const Transactions = () => {
       <ScrollView className={`${isDarkMode ? "bg-black" : "bg-[#f9f9f9]"} p-4`} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header */}
         <View className="flex-row items-center mb-8 mt-2">
-          <TouchableOpacity onPress={() => router.push("/")}>
+          <TouchableOpacity id="btn-back" onPress={() => router.push("/")}>
             <Feather name="arrow-left" size={24} color={isDarkMode ? "white" : "black"} />
           </TouchableOpacity>
           <Text className={`text-2xl font-bold ml-3 ${isDarkMode ? "text-white" : "text-black"}`}>
@@ -205,6 +206,7 @@ const Transactions = () => {
         <View className="flex-row flex-wrap gap-4 mb-4">
           <View className="flex-1">
             <TouchableOpacity
+              id="dropdown-date"
               onPress={() => setShowDateDropdown(!showDateDropdown)}
               className={`flex-row items-center px-4 py-2 rounded-full shadow-md ${isDarkMode ? "bg-gray-700" : "bg-white"}`}
             >
@@ -217,6 +219,7 @@ const Transactions = () => {
 
           <View className="flex-1">
             <TouchableOpacity
+              id="dropdown-type"
               onPress={() => setShowTypeDropdown(!showTypeDropdown)}
               className={`flex-row items-center px-4 py-2 rounded-full shadow-md ${isDarkMode ? "bg-gray-700" : "bg-white"}`}
             >
@@ -239,6 +242,7 @@ const Transactions = () => {
             <View className="flex-row justify-center items-center mt-6 mb-10 space-x-0 rounded-full border border-gray-300 px-1 overflow-x-auto">
               {/* First */}
               <TouchableOpacity
+                id="btn-pagination-first"
                 onPress={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-2 mx-0.5 border rounded-l-md ${currentPage === 1 ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}
@@ -250,6 +254,7 @@ const Transactions = () => {
               {totalPages <= 10 ? (
                 Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <TouchableOpacity
+                    id="btn-pagination-number"
                     key={page}
                     onPress={() => setCurrentPage(page)}
                     className={`px-3 py-2 border ${page === currentPage ? "bg-[#0061FF] border-[#0061FF]" : "border-[#0061FF] bg-[#E9E9E9]"}`}
@@ -262,6 +267,7 @@ const Transactions = () => {
                 <>
                   {[...Array(5).keys()].map((page, index) => (
                     <TouchableOpacity
+                      id="btn-pagination-number"
                       key={index}
                       onPress={() => setCurrentPage(page + 1)}
                       className={`px-3 py-2 border ${page + 1 === currentPage ? "bg-[#0061FF] border-[#0061FF]" : "border-[#0061FF] bg-[#E9E9E9]"}`}
@@ -275,6 +281,7 @@ const Transactions = () => {
 
               {/* Next */}
               <TouchableOpacity
+                id="btn-pagination-next"
                 onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-2 mx-0.5 border rounded-r-md ${currentPage === totalPages ? "border-gray-300 bg-transparent" : "border-[#0061FF]"}`}

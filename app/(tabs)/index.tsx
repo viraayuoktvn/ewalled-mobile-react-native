@@ -96,20 +96,22 @@ const Dashboard: React.FC = () => {
       <View className="mt-7 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Image
+            id="img-avatar-user"
             source={userData?.avatarUrl ? { uri: userData.avatarUrl } : require("../../public/images/default-avatar.png")}
             className="w-12 h-12 rounded-full border-4 border-[#178F8D] mr-2"
           />
           <View>
-            <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
+            <Text id="text-fullname" className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-lg`}>
               {userData?.fullname || "Loading..."}
             </Text>
-            <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+            <Text id="text-account" className={`${isDarkMode ? "text-white" : "text-black"}`}>
               Personal Account
             </Text>
           </View>
         </View>
         <TouchableOpacity onPress={toggleTheme}>
           <Feather
+            id="btn-toggle-theme"
             name={isDarkMode ? "moon" : "sun"}
             size={30}
             color={isDarkMode ? "white" : "orange"} 
@@ -119,7 +121,7 @@ const Dashboard: React.FC = () => {
 
       <View className="mt-6 flex-row justify-between items-center p-">
         <View className="flex-1">
-          <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
+          <Text id="text-greeting" className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
             Good {getGreeting()}, {userData?.fullname ? userData.fullname.split(" ")[0] : "User"}
           </Text>
           <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
@@ -127,6 +129,7 @@ const Dashboard: React.FC = () => {
           </Text>
         </View>
         <Image
+          id="img-theme"
           source={
             isDarkMode
               ? require("../../public/images/moon-face.png")
@@ -138,18 +141,19 @@ const Dashboard: React.FC = () => {
 
       <View className="mt-4 bg-[#0061FF] p-4 rounded-[10px] flex-row justify-between items-center shadow-md shadow-[#19918F]">
         <Text className="text-white">Account No.</Text>
-        <Text className="text-white font-bold text-lg">{walletData?.accountNumber || "Loading..."}</Text>
+        <Text id="text-account-number" className="text-white font-bold text-lg">{walletData?.accountNumber || "Loading..."}</Text>
       </View>
 
       <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
         <View>
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-lg`}>Balance</Text>
           <View className="flex-row items-center">
-            <Text className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
+            <Text id="text-balance" className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
               {isBalanceHidden ? "***************" : `Rp ${walletData?.balance.toLocaleString('id-ID') || "Loading..."}`}
             </Text>
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
               <Feather
+                id="btn-hide-balance"
                 name={isBalanceHidden ? "eye" : "eye-off"}
                 size={20}
                 color="gray"
@@ -160,6 +164,7 @@ const Dashboard: React.FC = () => {
         </View>
         <View className="flex items-end">
           <TouchableOpacity
+            id="btn-topup"
             className="bg-[#0061FF] p-2 rounded-[10px] mb-3 shadow-md shadow-[#19918F]"
             onPress={() => router.push("/topup")}
           >
@@ -167,6 +172,7 @@ const Dashboard: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            id="btn-transfer"
             className="bg-[#0061FF] p-2 rounded-[10px] shadow-md shadow-[#19918F]"
             onPress={() => router.push("/transfer")}
           >
@@ -181,7 +187,7 @@ const Dashboard: React.FC = () => {
           <Text className={`${isDarkMode ? "text-white" : "text-black"} font-bold text-xl`}>
             Transaction History
           </Text>
-          <TouchableOpacity onPress={() => router.push("/transactions")}>
+          <TouchableOpacity id="btn-show-all-transaction" onPress={() => router.push("/transactions")}>
             <Text className="text-blue-500 font-semibold">Show all</Text>
           </TouchableOpacity>
         </View>
@@ -218,6 +224,7 @@ const Dashboard: React.FC = () => {
 
             return (
               <TouchableOpacity
+                id="transaction-item"
                 key={i}
                 onPress={() => router.push(`/proof?transactionId=${item.id}`)}
               >
@@ -226,20 +233,21 @@ const Dashboard: React.FC = () => {
                 >
                   <View className="flex-row items-center">
                     <Image
+                      id="img-avatar"
                       source={require("../../public/images/default-avatar.png")}
                       className="w-12 h-12 rounded-full mr-3"
                     />
                     <View>
-                      <Text className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
+                      <Text id="text-fullname" className={`${isDarkMode ? "text-white" : "text-black"} font-medium`}>
                         {name || "Unknown"}
                       </Text>
-                      <Text className={`${isDarkMode ? "text-white" : "text-black"}`}>
+                      <Text id="text-transaction-type" className={`${isDarkMode ? "text-white" : "text-black"}`}>
                         {item.transactionType === "TOP_UP" ? "Topup" : "Transfer"}
                       </Text>
                       <Text className="text-gray-500 text-xs">{date}</Text>
                     </View>
                   </View>
-                  <Text className={`${amountColor} font-bold`}>
+                  <Text id="text-amount" className={`${amountColor} font-bold`}>
                     {amount}
                   </Text>
                 </View>

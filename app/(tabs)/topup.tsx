@@ -135,6 +135,7 @@ const TopUpScreen: React.FC = () => {
                 IDR
               </Text>
               <TextInput
+                id="input-amount"
                 className="flex-1 ml-2 w-full"
                 keyboardType="numeric"
                 placeholder="0"
@@ -160,6 +161,7 @@ const TopUpScreen: React.FC = () => {
               Payment Method
             </Text>
             <View
+              id="dropdown-method"
               className="rounded-lg mb-6"
               style={{
                 backgroundColor: isDarkMode ? "#444444" : "#f5f5f5",
@@ -187,6 +189,7 @@ const TopUpScreen: React.FC = () => {
               Notes
             </Text>
             <TextInput
+              id="input-notes"
               className="border-b border-gray-100 pb-2 mb-6"
               value={notes}
               onChangeText={setNotes}
@@ -198,6 +201,7 @@ const TopUpScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
+            id="btn-topup"
             className={`p-4 rounded-lg w-full max-w-md ${
               rawAmount === "" || isLoading ? "bg-gray-400" : "bg-[#0061FF]"
             }`}

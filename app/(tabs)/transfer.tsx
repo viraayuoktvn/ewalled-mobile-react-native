@@ -177,6 +177,7 @@ const TransferScreen: React.FC = () => {
             <Text className="text-gray-500">No other wallets available for transfer.</Text>
           ) : (
             <View
+              id="dropdown-recipient"
               className={`rounded-lg border px-3 py-2 ${
                 isDarkMode ? "bg-[#333] border-[#444]" : "bg-[#f0f0f0] border-[#ccc]"
               }`}
@@ -232,6 +233,7 @@ const TransferScreen: React.FC = () => {
             IDR
           </Text>
           <TextInput
+            id="input-amount"
             className="flex-1 w-full"
             keyboardType="numeric"
             placeholder="0"
@@ -255,7 +257,7 @@ const TransferScreen: React.FC = () => {
 
         <View className="flex-row justify-between mb-4 w-full max-w-md">
           <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>
-          <Text className="text-[#0061FF] text-sm">
+          <Text id="text-balance" className="text-[#0061FF] text-sm">
             {isFetchingWallet
               ? "Loading..."
               : `IDR ${myWallet.balance.toLocaleString("id-ID")}`}
@@ -266,6 +268,7 @@ const TransferScreen: React.FC = () => {
           Notes
         </Text>
         <TextInput
+          id="input-notes"
           className={`border-b mb-6 text-lg w-full max-w-md ${
             isDarkMode ? "border-gray-100" : "border-gray-200"
           }`}
@@ -276,6 +279,7 @@ const TransferScreen: React.FC = () => {
         />
 
         <TouchableOpacity
+          id="btn-transfer"
           className={`p-4 rounded-lg mt-6 w-full max-w-md ${
             isLoading || !selectedWallet || !amount || isNaN(Number(amount.replace(/\D/g, ""))) || Number(amount.replace(/\D/g, "")) <= 0
               ? "bg-gray-400"

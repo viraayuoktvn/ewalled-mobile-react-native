@@ -76,7 +76,7 @@ const LoginScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6 mt-8">
         <TextInput
-          id="email"
+          id="input-email"
           placeholder="Email"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={email}
@@ -88,14 +88,14 @@ const LoginScreen: React.FC = () => {
       <View className="w-full max-w-md mb-6">
         <View className="flex-row items-center bg-gray-100 rounded-lg">
           <TextInput
-            id="password"
+            id="input-password"
             placeholder="Password"
             className="flex-1 p-4"
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity id="show-password" onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity id="btn-hide-password" onPress={() => setShowPassword(!showPassword)}>
             <Feather
               name={showPassword ? "eye-off" : "eye"}
               className="px-5"

@@ -141,7 +141,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
-          id="fullname"
+          id="input-fullname"
           placeholder="Fullname"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={fullname}
@@ -156,7 +156,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
-          id="username"
+          id="input-username"
           placeholder="Username"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={username}
@@ -171,7 +171,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
-          id="email"
+          id="input-email"
           placeholder="Email"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={email}
@@ -188,7 +188,7 @@ const RegisterScreen: React.FC = () => {
       <View className="w-full max-w-md mb-6">
         <View className="flex-row items-center bg-gray-100 rounded-lg">
           <TextInput
-            id="password"
+            id="input-password"
             placeholder="Password"
             className="flex-1 p-4"
             secureTextEntry={!showPassword}
@@ -199,7 +199,7 @@ const RegisterScreen: React.FC = () => {
             }}
             onBlur={() => validateInput("password", password)}
           />
-          <TouchableOpacity id="show-password" onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity id="btn-show-password" onPress={() => setShowPassword(!showPassword)}>
             <Feather
               name={showPassword ? "eye-off" : "eye"}
               className="px-5"
@@ -215,7 +215,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
-          id="phonenumber"
+          id="input-phonenumber"
           placeholder="Phone Number"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={phoneNumber}
@@ -231,7 +231,7 @@ const RegisterScreen: React.FC = () => {
 
       <View className="w-full max-w-md mb-6">
         <TextInput
-          id="avatarurl"
+          id="input-avatarurl"
           placeholder="Avatar URL (Optional)"
           className="w-full p-4 rounded-lg bg-gray-100"
           value={avatarUrl}
@@ -251,7 +251,7 @@ const RegisterScreen: React.FC = () => {
         </TouchableOpacity>
         <Text className="text-black">I have agree to the </Text>
         <View className="flex-row items-center">
-          <TouchableOpacity id="tnc-modal" onPress={() => setModalVisible(true)}>
+          <TouchableOpacity id="text-tnc-modal" onPress={() => setModalVisible(true)}>
             <Text className="text-[#0061FF]">Terms and Conditions</Text>
           </TouchableOpacity>
           <Text className="text-[#FF0000] ml-1">*</Text>
@@ -270,7 +270,7 @@ const RegisterScreen: React.FC = () => {
           <View className="w-full bg-white rounded-lg h-full p-4">
             {/* Header */}
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-300">
-              <TouchableOpacity id="back" onPress={() => setModalVisible(false)}>
+              <TouchableOpacity id="btn-back" onPress={() => setModalVisible(false)}>
                 <Feather name="arrow-left" size={24} color= "black" />
               </TouchableOpacity>
               <Text className="text-lg font-bold">Terms and Conditions</Text>
