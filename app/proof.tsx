@@ -20,6 +20,7 @@ import api, {
 import { Feather } from "@expo/vector-icons";
 import moment from "moment-timezone";
 import { router } from "expo-router";
+import Modal from "react-native-modal";
 
 const TransactionSuccess: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -31,8 +32,12 @@ const TransactionSuccess: React.FC = () => {
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
   const [transaction, setTransaction] = useState<TransactionResponse | null>(null); 
   const [isLoading, setIsLoading] = useState(true);
-  const [showPopup, setShowPopup] = useState(false);
+
+  const [showPopup, setShowPopup] = useState(false); // for download success
   const [countdown, setCountdown] = useState(3);
+
+  const [showErrorPopup, setShowErrorPopup] = useState(false); // for error messages
+  const [errorMessage, setErrorMessage] = useState("");
 
   const route = useRoute();
   const { transactionId } = route.params as { transactionId: string }; 
@@ -67,6 +72,8 @@ const TransactionSuccess: React.FC = () => {
         }
       } catch (error) {
         console.error("❌ Error fetching data", error);
+        setErrorMessage("Failed to load transaction data.");
+        setShowErrorPopup(true);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +90,8 @@ const TransactionSuccess: React.FC = () => {
 
     const token = await AsyncStorage.getItem("authToken");
     if (!token) {
-      alert("Token not found. Please log in again.");
+      setErrorMessage("Token not found. Please log in again.");
+      setShowErrorPopup(true);
       return;
     }
 
@@ -93,11 +101,12 @@ const TransactionSuccess: React.FC = () => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error("❌ Error during download:", err);
-        alert(`Download failed: ${err.message}`);
+        setErrorMessage(`Download failed: ${err.message}`);
       } else {
         console.error("❌ Unknown error during download", err);
-        alert("Download failed: Unknown error");
+        setErrorMessage("Download failed: Unknown error");
       }
+      setShowErrorPopup(true);
     }
   };
 
@@ -163,7 +172,7 @@ const TransactionSuccess: React.FC = () => {
       >
         {/* Image success */}
         <View className="w-full">
-          <View  style={{ width: "100%", height: 156, backgroundColor: "#0061FF", marginBottom: 50 }}>
+          <View style={{ width: "100%", height: 156, backgroundColor: "#0061FF", marginBottom: 50 }}>
             <Image
               id="navbar-success"
               source={require("../public/images/navbar-success.png")}
@@ -180,7 +189,6 @@ const TransactionSuccess: React.FC = () => {
             Your transaction is successful!
           </Text>
 
-          {/* Transaction date */}
           <Text
             id="text-transaction-date"
             className={`text-center my-2 ${
@@ -190,7 +198,7 @@ const TransactionSuccess: React.FC = () => {
             {dateInWIB}
           </Text>
 
-          {/* Transaction data */}
+          {/* Transaction card */}
           <View
             className={`rounded-2xl m-6 p-8 shadow-md ${
               isDarkMode ? "bg-[#1a1a1a]" : "bg-white"
@@ -240,7 +248,6 @@ const TransactionSuccess: React.FC = () => {
               </>
             )}
 
-            {/* Button show detail */}
             <TouchableOpacity
               id="btn-detail-transaction"
               onPress={() => setShowDetail(!showDetail)}
@@ -293,6 +300,27 @@ const TransactionSuccess: React.FC = () => {
           </View>
         </View>
       )}
+
+      {/* Modal for error alert */}
+      <Modal
+        isVisible={showErrorPopup}
+        backdropOpacity={0.6}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        useNativeDriver
+        onBackdropPress={() => setShowErrorPopup(false)}
+      >
+        <View className="bg-white rounded-2xl px-6 py-8 items-center shadow-lg">
+          <Text className="text-lg font-bold text-black mb-3">Oops!</Text>
+          <Text className="text-center text-gray-600 mb-5">{errorMessage}</Text>
+          <TouchableOpacity
+            className="bg-blue-600 px-6 py-2 rounded-full"
+            onPress={() => setShowErrorPopup(false)}
+          >
+            <Text className="text-white font-bold">OK</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

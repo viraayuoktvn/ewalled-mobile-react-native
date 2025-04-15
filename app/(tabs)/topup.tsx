@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { useCallback, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
@@ -27,6 +28,10 @@ const TopUpScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { wallet: myWallet } = useUserContext(); 
   const [isLoading, setIsLoading] = useState(false);
+  
+  // State for modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const isLargeScreen = width > 768;
   const router = useRouter();
@@ -57,9 +62,9 @@ const TopUpScreen: React.FC = () => {
     setAmount(formatted);
 
     if (numericValue < 10000) {
-      setErrorMessage("Minimum transaction is IDR 10.000");
+      setErrorMessage("Minimum transaction is Rp10.000");
     } else if (numericValue > 2000000) {
-      setErrorMessage("Maximum transaction is IDR 2.000.000");
+      setErrorMessage("Maximum transaction is Rp2.000.000");
     } else {
       setErrorMessage("");
     }
@@ -73,7 +78,9 @@ const TopUpScreen: React.FC = () => {
       const walletId = myWallet?.id;
   
       if (!walletId) {
-        alert("Wallet not found. Please re-login.");
+        // Show custom modal error instead of alert
+        setModalMessage("Wallet not found. Please re-login.");
+        setModalVisible(true);
         return;
       }
   
@@ -98,7 +105,7 @@ const TopUpScreen: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   return (
     <KeyboardAvoidingView
@@ -134,7 +141,7 @@ const TopUpScreen: React.FC = () => {
               <Text
                 className={`text-lg mr-2 self-start ${isDarkMode ? "text-white" : "text-black"}`}
               >
-                IDR
+                Rp
               </Text>
               <TextInput
                 id="input-amount"
@@ -226,6 +233,18 @@ const TopUpScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Modal for error message */}
+      <Modal visible={modalVisible} animationType="fade" transparent={true}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+          <View style={{ backgroundColor: "white", padding: 20, borderRadius: 10, width: 300 }}>
+            <Text>{modalMessage}</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, backgroundColor: "#0061FF", alignItems: "center", borderRadius: 5 }}>
+              <Text style={{ color: "white" }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };

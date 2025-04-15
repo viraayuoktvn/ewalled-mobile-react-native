@@ -1,7 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Modal,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { loginUserAndSetupWallet, UserResponse, WalletResponse } from "@/services/api";
+import {
+  loginUserAndSetupWallet,
+  UserResponse,
+  WalletResponse,
+} from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserContext } from "@/contexts/UserContext";
 import { Feather } from "@expo/vector-icons";
@@ -16,9 +28,17 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showCustomModal = (message: string) => {
+    setModalMessage(message);
+    setShowModal(true);
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Email and password are required.");
+      showCustomModal("Email and password are required.");
       return;
     }
 
@@ -27,7 +47,7 @@ const LoginScreen: React.FC = () => {
       const response = await loginUserAndSetupWallet(email, password);
 
       if (!response) {
-        Alert.alert("Error", "Invalid response from server.");
+        showCustomModal("Invalid response from server.");
         return;
       }
 
@@ -54,13 +74,13 @@ const LoginScreen: React.FC = () => {
       console.error("Login Error:", error);
 
       if (
-        error?.response?.status === 401 || 
-        error?.message?.toLowerCase().includes("unauthorized") || 
+        error?.response?.status === 401 ||
+        error?.message?.toLowerCase().includes("unauthorized") ||
         error?.message?.toLowerCase().includes("invalid")
       ) {
-        Alert.alert("Login Failed", "Incorrect email or password.");
+        showCustomModal("Incorrect email or password.");
       } else {
-        Alert.alert("Error", error.message || "Something went wrong. Please try again.");
+        showCustomModal(error.message || "Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -96,8 +116,10 @@ const LoginScreen: React.FC = () => {
             value={password}
             onChangeText={setPassword}
           />
-          {/* Button show password */}
-          <TouchableOpacity id="btn-hide-password" onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity
+            id="btn-hide-password"
+            onPress={() => setShowPassword(!showPassword)}
+          >
             <Feather
               name={showPassword ? "eye-off" : "eye"}
               className="px-5"
@@ -127,6 +149,21 @@ const LoginScreen: React.FC = () => {
           <Text className="text-[#0061FF]">Register here</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Custom Modal */}
+      <Modal transparent={true} visible={showModal} animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/40 px-6">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-sm items-center">
+            <Text className="text-black text-base text-center mb-4">{modalMessage}</Text>
+            <TouchableOpacity
+              className="bg-blue-600 px-6 py-2 rounded-full"
+              onPress={() => setShowModal(false)}
+            >
+              <Text className="text-white font-semibold text-center">OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

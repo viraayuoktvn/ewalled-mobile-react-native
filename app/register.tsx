@@ -7,7 +7,6 @@ import {
   Image,
   Modal,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Dimensions,
 } from "react-native";
@@ -22,6 +21,8 @@ const isLargeScreen = width > 768;
 const RegisterScreen: React.FC = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false); 
+  const [alertMessage, setAlertMessage] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [fullname, setFullName] = useState("");
   const [username, setUsername] = useState("");
@@ -42,14 +43,15 @@ const RegisterScreen: React.FC = () => {
   });
 
   const handleRegister = async () => {
-  
     if (!fullname || !username || !email || !password || !phoneNumber) {
-      Alert.alert("Error", "Please fill in all required fields");
+      setAlertMessage("Please fill in all required fields");
+      setModalVisible(true);
       return;
     }
   
     if (!isChecked) {
-      Alert.alert("Error", "You must agree to the terms and conditions.");
+      setAlertMessage("You must agree to the terms and conditions.");
+      setModalVisible(true);
       return;
     }
   
@@ -63,18 +65,30 @@ const RegisterScreen: React.FC = () => {
         phoneNumber,
         avatarUrl: avatarUrl || null,
       });
-    
+  
       await AsyncStorage.setItem("userData", JSON.stringify(newUser));
   
       // Redirect to login page
       router.replace("/login");
     } catch (error: any) {
-      console.error("🚨 Registration Failed:", error.message);
-      Alert.alert("❌ Registration Error", error.message || "Failed to register user.");
+      console.error("Registration Failed:", error.message);
+  
+      let userFriendlyMessage = "Something went wrong. Please try again later.";
+  
+      if (error.message.includes("409")) {
+        userFriendlyMessage = "This email or username is already taken. Please choose another.";
+      } else if (error.message.includes("400")) {
+        userFriendlyMessage = "Please check your input and try again.";
+      } else if (error.message.includes("500")) {
+        userFriendlyMessage = "Server error. Please try again later.";
+      }
+  
+      setAlertMessage(userFriendlyMessage);  // Display the customized message
+      setModalVisible(true);
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const validateInput = (name: string, value: string) => {
     let errorMessage = "";
@@ -91,7 +105,7 @@ const RegisterScreen: React.FC = () => {
       case "email":
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value) {
-          errorMessage = "Email is required";
+          errorMessage = "Email cannot be empty";
         } else if (!emailRegex.test(value)) {
           errorMessage = "Invalid email format";
         }
@@ -100,7 +114,7 @@ const RegisterScreen: React.FC = () => {
       case "password":
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,32}$/;
         if (!value) {
-          errorMessage = "Password is required";
+          errorMessage = "Password cannot be empty";
         } else if (value.length < 8 || value.length > 32) {
           errorMessage = "Password must be between 8 and 32 characters";
         } else if (!passwordRegex.test(value)) {
@@ -111,7 +125,7 @@ const RegisterScreen: React.FC = () => {
       case "phoneNumber":
         const phoneRegex = /^0\d{9,12}$/;
         if (!value) {
-          errorMessage = "Phone Number is required";
+          errorMessage = "Phone Number cannot be empty";
         } else if (!phoneRegex.test(value)) {
           errorMessage = "Phone number must start with 0 and be 10 to 13 digits long";
         }
@@ -132,8 +146,7 @@ const RegisterScreen: React.FC = () => {
       ...prevErrors,
       [name]: errorMessage,
     }));
-  };
-  
+  };  
 
   return (
     <ScrollView className="flex-1 bg-white p-10" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
@@ -244,28 +257,24 @@ const RegisterScreen: React.FC = () => {
         />
         {errors.avatarUrl ? <Text className="text-[#FF0000] mt-1 ml-2">{errors.avatarUrl}</Text> : null}
       </View>
-
+      
       {/* Checkbox */}
       <View className="mt-6 flex-row justify-center items-center">
         <TouchableOpacity
-          id="checkbox-tnc"
           onPress={() => setIsChecked(!isChecked)}
           className="mr-2"
         >
           <FontAwesome
-            id="checkbox-tnc-square"
             name={isChecked ? "check-square" : "square-o"}
             size={24}
             color={isChecked ? "#2563EB" : "#9CA3AF"} 
           />
         </TouchableOpacity>
-        <Text className="text-black">I have agree to the </Text>
-        <View className="flex-row items-center">
-          <TouchableOpacity id="text-tnc-modal" onPress={() => setModalVisible(true)}>
-            <Text className="text-[#0061FF]">Terms and Conditions</Text>
-          </TouchableOpacity>
-          <Text className="text-[#FF0000] ml-1">*</Text>
-        </View>
+        <Text className="text-black">I have agreed to the </Text>
+        <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
+          <Text className="text-[#0061FF]">Terms and Conditions</Text>
+        </TouchableOpacity>
+        <Text className="text-[#FF0000] ml-1">*</Text>
       </View>
 
       {/* Modal for Terms and Conditions */}
@@ -273,14 +282,14 @@ const RegisterScreen: React.FC = () => {
         id="modal-tnc"
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        visible={termsModalVisible}
+        onRequestClose={() => setTermsModalVisible(false)}
       >
         <View className="flex-1 justify-center items-center bg-black/50 p-6">
           <View className="w-full bg-white rounded-lg h-full p-4">
             {/* Header */}
             <View className="flex-row items-center justify-between pb-4 border-b border-gray-300">
-              <TouchableOpacity id="btn-back" onPress={() => setModalVisible(false)}>
+              <TouchableOpacity id="btn-back" onPress={() => setTermsModalVisible(false)}>
                 <Feather name="arrow-left" size={24} color= "black" />
               </TouchableOpacity>
               <Text className="text-lg font-bold">Terms and Conditions</Text>
@@ -328,15 +337,34 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
-      {/* Button register */}
-      <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
+      {/* Custom Alert Modal */}
+      <Modal transparent={true} visible={modalVisible} animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/40 px-6">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-sm items-center">
+            <Text className="text-black text-base text-center mb-4">{alertMessage}</Text>
+            <TouchableOpacity
+              className="bg-blue-600 px-6 py-2 rounded-full"
+              onPress={() => setModalVisible(false)}
+            >
+              <Text className="text-white font-semibold text-center">OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Register Button */}
+      <TouchableOpacity
+        className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`}
+        disabled={!isChecked || loading}
+        onPress={handleRegister}
+      >
         {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>
 
       {/* Login Link */}
       <View className="mt-3 mb-3 flex-row items-start justify-start w-full max-w-md">
         <Text className="text-black">Have an account? </Text>
-        <TouchableOpacity id="text-login" onPress={() => router.push("/login")}>
+        <TouchableOpacity onPress={() => router.push("/login")}>
           <Text className="text-[#0061FF]">Login here</Text>
         </TouchableOpacity>
       </View>

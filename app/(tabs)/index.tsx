@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,6 +16,8 @@ const Dashboard: React.FC = () => {
   const [walletData, setWalletData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [recentTransactions, setRecentTransactions] = useState<TransactionResponse[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -45,17 +47,17 @@ const Dashboard: React.FC = () => {
           });
 
           const wallets = Array.isArray(walletResponse.data.data) ? walletResponse.data.data : [];
-
           const userWallet = wallets.find(wallet => wallet.user.id === user.id);
 
           if (userWallet) {
             setWalletData(userWallet);
           } else {
-            console.warn("⚠️ No wallet found for user ID:", user.id);
+            throw new Error("No wallet found for user ID.");
           }
         } catch (error: any) {
           console.error("🚨 Error Fetching Data:", error.message);
-          Alert.alert("Error", "Unable to fetch user or wallet data.");
+          setModalMessage("Unable to fetch user or wallet data.");
+          setModalVisible(true);  // Show modal for error
         } finally {
           setIsLoading(false);
         }
@@ -95,6 +97,18 @@ const Dashboard: React.FC = () => {
 
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? "bg-[#272727]" : "bg-white"} p-6`}>
+      {/* Modal for error message */}
+      <Modal visible={modalVisible} animationType="fade" transparent={true}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+          <View style={{ backgroundColor: "white", padding: 20, borderRadius: 10, width: 300 }}>
+            <Text>{modalMessage}</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10, padding: 10, backgroundColor: "#0061FF", alignItems: "center", borderRadius: 5 }}>
+              <Text style={{ color: "white" }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Profile user */}
       <View className="mt-7 flex-row justify-between items-center">
         <View className="flex-row items-center">
@@ -118,13 +132,13 @@ const Dashboard: React.FC = () => {
             id="btn-toggle-theme"
             name={isDarkMode ? "moon" : "sun"}
             size={30}
-            color={isDarkMode ? "white" : "orange"} 
+            color={isDarkMode ? "white" : "orange"}
           />
         </TouchableOpacity>
       </View>
 
       {/* Greeting */}
-      <View className="mt-6 flex-row justify-between items-center p-">
+      <View className="mt-6 flex-row justify-between items-center">
         <View className="flex-1">
           <Text id="text-greeting" className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
             Good {getGreeting()}, {userData?.fullname ? userData.fullname.split(" ")[0] : "User"}
@@ -161,10 +175,10 @@ const Dashboard: React.FC = () => {
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
               <Feather
                 id="btn-hide-balance"
-                name={isBalanceHidden ? "eye" : "eye-off"}
+                name={isBalanceHidden ? "eye-off" : "eye"}
                 size={20}
                 color="gray"
-                style={{ marginLeft: 12 }} 
+                style={{ marginLeft: 12 }}
               />
             </TouchableOpacity>
           </View>
@@ -229,7 +243,6 @@ const Dashboard: React.FC = () => {
             const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
 
             return (
-              // Can get detail transaction by click each transaction
               <TouchableOpacity
                 id="transaction-item"
                 key={i}

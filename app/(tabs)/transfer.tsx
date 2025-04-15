@@ -4,7 +4,6 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  Alert,
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
@@ -16,11 +15,12 @@ import { getAllWallets, transfer, WalletResponse } from "../../services/api";
 import { useUserContext } from "../../contexts/UserContext";
 import RNPickerSelect from "react-native-picker-select";
 import { useRouter, useFocusEffect } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
 
-// Format number to IDR currencry
+// Format number to IDR currency
 const formatCurrency = (value: string) => {
   const cleaned = value.replace(/\D/g, "");
   const formatted = new Intl.NumberFormat("id-ID").format(Number(cleaned));
@@ -39,6 +39,11 @@ const TransferScreen: React.FC = () => {
   const [wallets, setWallets] = useState<WalletResponse[]>([]);
   const [selectedWallet, setSelectedWallet] = useState<WalletResponse | null>(null);
   const [isFetchingWallet, setIsFetchingWallet] = useState(true);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const refreshWalletData = async () => {
     try {
@@ -53,7 +58,7 @@ const TransferScreen: React.FC = () => {
       }
     } catch (err) {
       console.error("Failed to refresh wallets", err);
-      Alert.alert("Error", "Failed to load wallets.");
+      showModal("Failed to load wallets.");
     } finally {
       setIsFetchingWallet(false);
     }
@@ -78,32 +83,37 @@ const TransferScreen: React.FC = () => {
 
     const amountValue = parseInt(numericOnly);
     if (amountValue < 10000) {
-      setErrorMessage("Minimum transaction is IDR 10.000");
+      setErrorMessage("Minimum transaction is Rp10.000");
     } else if (amountValue > 2000000) {
-      setErrorMessage("Maximum transaction is IDR 2.000.000");
+      setErrorMessage("Maximum transaction is Rp2.000.000");
     }
+  };
+
+  const showModal = (message: string) => {
+    setModalMessage(message);
+    setModalVisible(true);
   };
 
   const handleTransfer = async () => {
     const numericAmount = Number(amount.replace(/\D/g, ""));
   
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
-      Alert.alert("Invalid Amount", "Please enter a valid amount to transfer.");
+      showModal("Please enter a valid amount to transfer.");
       return;
     }
   
     if (!selectedWallet) {
-      Alert.alert("No Recipient", "Please select a wallet to send to.");
+      showModal("Please select a wallet to send to.");
       return;
     }
   
     if (selectedWallet.id === myWallet?.id) {
-      Alert.alert("Invalid Transfer", "You cannot transfer to your own wallet.");
+      showModal("You cannot transfer to your own wallet.");
       return;
     }
   
     if (numericAmount > myWallet!.balance) {
-      Alert.alert("Insufficient Balance", "You don't have enough balance to transfer.");
+      showModal("You don't have enough balance to transfer.");
       return;
     }
   
@@ -119,7 +129,7 @@ const TransferScreen: React.FC = () => {
       });
   
       const transactionId = response.id;
-      console.log("transactionId: ", transactionId)
+      console.log("transactionId: ", transactionId);
   
       setAmount("");
       setNotes("");
@@ -133,11 +143,11 @@ const TransferScreen: React.FC = () => {
       });
       
     } catch (error: any) {
-      Alert.alert("🚨 Transfer Failed", error.message || "An error occurred.");
+      showModal(error.message || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   if (!myWallet) {
     return (
@@ -258,13 +268,22 @@ const TransferScreen: React.FC = () => {
         ) : null}
 
         {/* Show balance */}
-        <View className="flex-row justify-between mb-4 w-full max-w-md">
-          <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>
-          <Text id="text-balance" className="text-[#0061FF] text-sm">
-            {isFetchingWallet
-              ? "Loading..."
-              : `IDR ${myWallet.balance.toLocaleString("id-ID")}`}
+        <View className="flex-row items-center justify-between w-full max-w-md mb-4">
+          <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+            Balance:
           </Text>
+          <View className="flex-row items-center space-x-4">
+            <Text className={`text-sm mr-2 text-[#0061FF]`}>
+              {isBalanceVisible ? `Rp${formatCurrency(String(myWallet.balance))}` : "************"}
+            </Text>
+            <TouchableOpacity onPress={() => setIsBalanceVisible(!isBalanceVisible)}>
+              <Feather
+                name={isBalanceVisible ? "eye" : "eye-off"}
+                size={18}
+                color={isDarkMode ? "white" : "black"}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Input notes */}
@@ -281,8 +300,8 @@ const TransferScreen: React.FC = () => {
           onChangeText={setNotes}
           style={{ color: isDarkMode ? "white" : "black" }}
         />
-        
-        {/* Button transfer */}
+
+        {/* Transfer Button */}
         <TouchableOpacity
           id="btn-transfer"
           className={`p-4 rounded-lg mt-6 w-full max-w-md ${
@@ -307,6 +326,21 @@ const TransferScreen: React.FC = () => {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal */}
+      {modalVisible && (
+        <View className="modal-container">
+          <View className="modal-content">
+            <Text className="modal-message">{modalMessage}</Text>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              className="modal-btn"
+            >
+              <Text className="text-white">OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
