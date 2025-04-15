@@ -31,6 +31,7 @@ const TopUpScreen: React.FC = () => {
   const isLargeScreen = width > 768;
   const router = useRouter();
 
+  // To reset data after back to topup page
   useFocusEffect(
     useCallback(() => {
       setAmount("");
@@ -123,6 +124,7 @@ const TopUpScreen: React.FC = () => {
               Top Up
             </Text>
 
+            {/* Input data */}
             <Text
               className={`text-gray-400 mb-2 ${isDarkMode ? "text-white" : "text-black"}`}
             >
@@ -155,6 +157,7 @@ const TopUpScreen: React.FC = () => {
               </Text>
             ) : null}
 
+            {/* Choose payment method */}
             <Text
               className={`text-gray-400 mb-3 ${isDarkMode ? "text-white" : "text-black"}`}
             >
@@ -183,6 +186,7 @@ const TopUpScreen: React.FC = () => {
               </Picker>
             </View>
 
+            {/* Input notes */}
             <Text
               className={`text-gray-400 mt-4 mb-4 ${isDarkMode ? "text-white" : "text-black"}`}
             >
@@ -200,6 +204,7 @@ const TopUpScreen: React.FC = () => {
             />
           </View>
 
+          {/* Button top up */}
           <TouchableOpacity
             id="btn-topup"
             className={`p-4 rounded-lg w-full max-w-md ${

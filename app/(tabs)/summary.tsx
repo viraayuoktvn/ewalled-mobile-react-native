@@ -95,7 +95,7 @@ const SummaryPage = () => {
         setAvailableYears(uniqueYears);
       }
     } catch (error) {
-      console.error("❌ Error fetching graph:", error);
+      console.error("Error fetching graph:", error);
     } finally {
       setLoading(false);  // Set loading to false after fetching
     }
@@ -154,7 +154,7 @@ const SummaryPage = () => {
           <Text className="text-white text-lg font-semibold">Total Balance</Text>
         </View>
         <Text id="text-balance" className="text-2xl font-bold text-white">
-          Rp {summary.balance.toLocaleString("id-ID")}
+          Rp{summary.balance.toLocaleString("id-ID")}
         </Text>
       </View>
 
@@ -185,7 +185,7 @@ const SummaryPage = () => {
             <Text className="text-lg font-semibold" style={{ color: colors.text }}>Income</Text>
         </View>
         <Text id="text-income" style={{ color: colors.text }} className="text-xl font-bold">
-          Rp {summary.totalIncome.toLocaleString("id-ID")}
+          Rp{summary.totalIncome.toLocaleString("id-ID")}
         </Text>
       </View>
 
@@ -215,7 +215,7 @@ const SummaryPage = () => {
           <Text className="text-lg font-semibold" style={{ color: colors.text }}>Outcome</Text>
         </View>
         <Text id="text-outcome" style={{ color: colors.text }} className="text-xl font-bold">
-          Rp {summary.totalOutcome.toLocaleString("id-ID")}
+          Rp{summary.totalOutcome.toLocaleString("id-ID")}
         </Text>
       </View>
 
@@ -275,6 +275,7 @@ const SummaryPage = () => {
               backgroundColor: isDarkMode ? "#2c2c2c" : "#f5f5f5",
               color: isDarkMode ? "white" : "black",
               borderRadius: 30,
+              paddingHorizontal: 20
             }}
             dropdownIconColor={isDarkMode ? "#2c2c2c" : "#000000"}
             itemStyle={{
@@ -343,13 +344,13 @@ const SummaryPage = () => {
                <VictoryBar
                  data={graphData.map((d) => ({ x: d.label, y: d.income }))}
                  style={{ data: { fill: colors.income } }}
-                 labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
+                 labels={({ datum }) => `Rp${datum.y.toLocaleString("id-ID")}`}
                  labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
                />
                <VictoryBar
                  data={graphData.map((d) => ({ x: d.label, y: d.outcome }))}
                  style={{ data: { fill: colors.outcome } }}
-                 labels={({ datum }) => `Rp ${datum.y.toLocaleString("id-ID")}`}
+                 labels={({ datum }) => `Rp${datum.y.toLocaleString("id-ID")}`}
                  labelComponent={<VictoryLabel dy={-8} style={{ fill: colors.text, fontSize: 12 }} />}
                />
              </VictoryGroup>

@@ -20,7 +20,7 @@ import { useRouter, useFocusEffect } from "expo-router";
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 768;
 
-// Format angka ke string IDR currency
+// Format number to IDR currencry
 const formatCurrency = (value: string) => {
   const cleaned = value.replace(/\D/g, "");
   const formatted = new Intl.NumberFormat("id-ID").format(Number(cleaned));
@@ -59,6 +59,7 @@ const TransferScreen: React.FC = () => {
     }
   };
 
+  // Reset input data when back to page
   useFocusEffect(
     useCallback(() => {
       setAmount("");
@@ -168,6 +169,7 @@ const TransferScreen: React.FC = () => {
           Transfer
         </Text>
 
+        {/* Input field */}
         <Text className={`text-sm mb-2 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}>
           Select Recipient:
         </Text>
@@ -255,6 +257,7 @@ const TransferScreen: React.FC = () => {
           </View>
         ) : null}
 
+        {/* Show balance */}
         <View className="flex-row justify-between mb-4 w-full max-w-md">
           <Text className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>Your Balance</Text>
           <Text id="text-balance" className="text-[#0061FF] text-sm">
@@ -264,6 +267,7 @@ const TransferScreen: React.FC = () => {
           </Text>
         </View>
 
+        {/* Input notes */}
         <Text className={`text-sm mt-8 mb-4 w-full max-w-md ${isDarkMode ? "text-white" : "text-black"}`}>
           Notes
         </Text>
@@ -277,7 +281,8 @@ const TransferScreen: React.FC = () => {
           onChangeText={setNotes}
           style={{ color: isDarkMode ? "white" : "black" }}
         />
-
+        
+        {/* Button transfer */}
         <TouchableOpacity
           id="btn-transfer"
           className={`p-4 rounded-lg mt-6 w-full max-w-md ${

@@ -66,7 +66,7 @@ const RegisterScreen: React.FC = () => {
     
       await AsyncStorage.setItem("userData", JSON.stringify(newUser));
   
-      // Redirect  halaman login
+      // Redirect to login page
       router.replace("/login");
     } catch (error: any) {
       console.error("🚨 Registration Failed:", error.message);
@@ -120,7 +120,7 @@ const RegisterScreen: React.FC = () => {
       case "avatarUrl":
         const urlRegex = /^http:\/\/.*/;
         if (value && !urlRegex.test(value)) {
-          errorMessage = "Avatar URL must start with http://";
+          errorMessage = "Avatar URL must start with https://";
         }
         break;
   
@@ -139,6 +139,7 @@ const RegisterScreen: React.FC = () => {
     <ScrollView className="flex-1 bg-white p-10" contentContainerStyle={{ alignItems: "center", padding: isLargeScreen ? 12 : 6 }}>
       <Image source={require("../public/images/ewalled.png")} className="w-[233px] h-[57px] mb-24 mt-12" />
 
+      {/* Input field */}
       <View className="w-full max-w-md mb-6">
         <TextInput
           id="input-fullname"
@@ -244,6 +245,7 @@ const RegisterScreen: React.FC = () => {
         {errors.avatarUrl ? <Text className="text-[#FF0000] mt-1 ml-2">{errors.avatarUrl}</Text> : null}
       </View>
 
+      {/* Checkbox */}
       <View className="mt-6 flex-row justify-center items-center">
         <TouchableOpacity
           id="checkbox-tnc"
@@ -326,6 +328,7 @@ const RegisterScreen: React.FC = () => {
         </View>
       </Modal>
 
+      {/* Button register */}
       <TouchableOpacity id="btn-register" className={`w-full max-w-md p-4 rounded-lg mt-4 ${isChecked ? "bg-blue-600" : "bg-gray-400"}`} disabled={!isChecked || loading} onPress={handleRegister}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold">Register</Text>}
       </TouchableOpacity>

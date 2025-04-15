@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
     return "Night";
   };
 
-  // Fetch data user and wallet
+  // Get data user and wallet
   useFocusEffect(
     useCallback(() => {
       const fetchUserAndWallet = async () => {
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
     }, [])
   );
 
-  // Fetch recent transactions
+  // Get recent transactions
   useEffect(() => {
     const fetchRecentTransactions = async () => {
       if (!walletData) return;
@@ -144,17 +144,19 @@ const Dashboard: React.FC = () => {
         />
       </View>
 
+      {/* Account Info */}
       <View className="mt-4 bg-[#0061FF] p-4 rounded-[10px] flex-row justify-between items-center shadow-md shadow-[#19918F]">
         <Text className="text-white">Account No.</Text>
         <Text id="text-account-number" className="text-white font-bold text-lg">{walletData?.accountNumber || "Loading..."}</Text>
       </View>
 
+      {/* Balance */}
       <View className={`mt-4 p-4 ${isDarkMode ? "bg-[#272727]" : "bg-white"} rounded-2xl flex-row justify-between items-center`}>
         <View>
           <Text className={`${isDarkMode ? "text-white" : "text-black"} text-lg`}>Balance</Text>
           <View className="flex-row items-center">
             <Text id="text-balance" className={`${isDarkMode ? "text-white" : "text-black"} text-2xl font-bold`}>
-              {isBalanceHidden ? "***************" : `Rp ${walletData?.balance.toLocaleString('id-ID') || "Loading..."}`}
+              {isBalanceHidden ? "***************" : `Rp${walletData?.balance.toLocaleString('id-ID') || "Loading..."}`}
             </Text>
             <TouchableOpacity onPress={() => setIsBalanceHidden(!isBalanceHidden)}>
               <Feather
@@ -167,6 +169,8 @@ const Dashboard: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Transaction button */}
         <View className="flex items-end">
           <TouchableOpacity
             id="btn-topup"
@@ -221,13 +225,11 @@ const Dashboard: React.FC = () => {
             });
 
             const amountValue = parseFloat(item.amount as any);
-            const amount = `${isTopup || isReceiver ? "+" : "-"} ${amountValue.toLocaleString("id-ID", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`;
+            const amount = `${isTopup || isReceiver ? "+" : "-"} Rp${amountValue.toLocaleString("id-ID")}`;
             const amountColor = isTopup || isReceiver ? "text-green-500" : isDarkMode ? "text-white" : "text-black";
 
             return (
+              // Can get detail transaction by click each transaction
               <TouchableOpacity
                 id="transaction-item"
                 key={i}

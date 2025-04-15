@@ -74,6 +74,7 @@ const LoginScreen: React.FC = () => {
         className="w-[233px] h-[57px] mb-12"
       />
 
+      {/* Input field */}
       <View className="w-full max-w-md mb-6 mt-8">
         <TextInput
           id="input-email"
@@ -95,6 +96,7 @@ const LoginScreen: React.FC = () => {
             value={password}
             onChangeText={setPassword}
           />
+          {/* Button show password */}
           <TouchableOpacity id="btn-hide-password" onPress={() => setShowPassword(!showPassword)}>
             <Feather
               name={showPassword ? "eye-off" : "eye"}
@@ -106,6 +108,7 @@ const LoginScreen: React.FC = () => {
         </View>
       </View>
 
+      {/* Button login */}
       <TouchableOpacity
         id="btn-login"
         className="w-full max-w-md p-4 rounded-lg mt-4 bg-blue-600"
@@ -117,6 +120,7 @@ const LoginScreen: React.FC = () => {
         </Text>
       </TouchableOpacity>
 
+      {/* Register if don't have an account */}
       <View className="mt-3 flex-row items-start justify-start">
         <Text className="text-black">Don't have an account? </Text>
         <TouchableOpacity id="text-register" onPress={() => router.push("/register")}>

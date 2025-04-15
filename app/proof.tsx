@@ -22,15 +22,17 @@ import moment from "moment-timezone";
 import { router } from "expo-router";
 
 const TransactionSuccess: React.FC = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode } = useTheme();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
-  const [showDetail, setShowDetail] = useState(false);
 
+  const [showDetail, setShowDetail] = useState(false);
   const [userData, setUserData] = useState<UserResponse | null>(null);
   const [walletData, setWalletData] = useState<WalletResponse | null>(null);
   const [transaction, setTransaction] = useState<TransactionResponse | null>(null); 
   const [isLoading, setIsLoading] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   const route = useRoute();
   const { transactionId } = route.params as { transactionId: string }; 
@@ -78,16 +80,16 @@ const TransactionSuccess: React.FC = () => {
       console.warn("⚠️ No transaction available");
       return;
     }
-  
+
     const token = await AsyncStorage.getItem("authToken");
     if (!token) {
       alert("Token not found. Please log in again.");
       return;
     }
-  
+
     try {
       await downloadTransactionProof(transaction.id, token);
-      alert("Download successful!");
+      setShowPopup(true);
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error("❌ Error during download:", err);
@@ -97,12 +99,29 @@ const TransactionSuccess: React.FC = () => {
         alert("Download failed: Unknown error");
       }
     }
-  };  
+  };
+
+  useEffect(() => {
+    if (showPopup) {
+      let timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            setShowPopup(false);
+            return 3;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [showPopup]);
 
   const convertToWIB = (date: string) => {
     return moment(date).tz('Asia/Jakarta').format('DD MMM YYYY - HH:mm');
   };
-  
+
   const dateInWIB = transaction ? convertToWIB(transaction.transactionDate) : "Tanggal tidak tersedia";    
 
   if (isLoading) {
@@ -142,8 +161,9 @@ const TransactionSuccess: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full max-w-[600px] pt-10">
-          <View className="w-full overflow-hidden">
+        {/* Image success */}
+        <View className="w-full">
+          <View  style={{ width: "100%", height: 156, backgroundColor: "#0061FF", marginBottom: 50 }}>
             <Image
               id="navbar-success"
               source={require("../public/images/navbar-success.png")}
@@ -160,8 +180,9 @@ const TransactionSuccess: React.FC = () => {
             Your transaction is successful!
           </Text>
 
+          {/* Transaction date */}
           <Text
-            id="transaction-date"
+            id="text-transaction-date"
             className={`text-center my-2 ${
               isDarkMode ? "text-gray-400" : "text-gray-500"
             }`}
@@ -169,6 +190,7 @@ const TransactionSuccess: React.FC = () => {
             {dateInWIB}
           </Text>
 
+          {/* Transaction data */}
           <View
             className={`rounded-2xl m-6 p-8 shadow-md ${
               isDarkMode ? "bg-[#1a1a1a]" : "bg-white"
@@ -176,7 +198,7 @@ const TransactionSuccess: React.FC = () => {
           >
             <Row
               label="Amount"
-              value={`Rp ${transaction.amount.toLocaleString("id-ID")}`}
+              value={`Rp${transaction.amount.toLocaleString("id-ID")}`}
               dark={isDarkMode}
             />
 
@@ -212,12 +234,13 @@ const TransactionSuccess: React.FC = () => {
                 <Row label="Admin Fee" value="Rp 0" dark={isDarkMode} />
                 <Row
                   label="Total"
-                  value={`Rp ${transaction.amount.toLocaleString("id-ID")}`}
+                  value={`Rp${transaction.amount.toLocaleString("id-ID")}`}
                   dark={isDarkMode}
                 />
               </>
             )}
 
+            {/* Button show detail */}
             <TouchableOpacity
               id="btn-detail-transaction"
               onPress={() => setShowDetail(!showDetail)}
@@ -260,6 +283,16 @@ const TransactionSuccess: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Pop up modal download success */}
+      {showPopup && (
+        <View className="absolute top-0 left-0 w-full h-full bg-black/60 justify-center items-center z-50">
+          <View className="bg-white rounded-2xl px-6 py-8 shadow-lg w-3/4 max-w-sm items-center">
+            <Text className="text-xl font-bold text-black mb-2">Download Success!</Text>
+            <Text className="text-sm text-gray-500">Close in... ({countdown})</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

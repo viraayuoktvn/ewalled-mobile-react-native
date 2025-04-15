@@ -30,6 +30,7 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
+  // Apply navbar except on dashboard, login, register, and proof
   const hideNavbarOn = ['/', '/login', '/register', '/proof'];
   const shouldHideNavbar = hideNavbarOn.includes(pathname);
 
